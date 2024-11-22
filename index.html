@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>クイズ</title>
+    <link rel="icon" href="./favicon.ico">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div id="header">
+        <div>
+            <button id="stopProcess">一時停止</button>
+            <button id="startProcess">再開</button>
+        </div>
+        <div>
+            <div id="loading">通信中</div>
+            <a href="https://script.google.com/macros/s/AKfycbxt6H7saDD4cD68IO-eYayjLcrJZMDNvQ-B8digshDX-K0oisBuXVnoRz2rGNeE3Cl_dQ/exec?page=makingQuestion" id="makingQuestionLink" target="_blank">作問</a>
+        </div>
+    </div>
+    <div id="answer_input_cover">
+        <div id="answer_input_space">
+            <div id="inputCountdown">4</div>
+            <div id="answer_input">
+                <span></span>
+                <div id="answer_input_write">答え</div>
+            </div>
+            <div class="answer_input_buttons">
+                <button id="button1">い</button>
+                <button id="button2">ろ</button>
+                <button id="button3">は</button>
+                <button id="button4">に</button>
+            </div>
+            <div class="answer_input_buttons">
+                <button id="button5">ほ</button>
+                <button id="button6">て</button>
+                <button id="button7">と</button>
+                <button id="button8">ち</button>
+            </div>
+        </div>
+    </div>
+    <div id="correct">正解</div>
+    <div id="incorrect">不正解</div>
+  
+    <div>
+        <label for="countdown" id="countdown_label">7.00</label>
+        <progress id="countdown" max="700" value="700"></progress>
+    </div>
+    <div id="main">
+        <div id="question">読み込み中...</div>
+        <div id="answer">
+            <div id="answer1"></div>
+            <div id="answer2"></div>
+        </div>
+    </div>
+    <div id="answer_button_space">
+        <button id="answer_button">解答</button>
+        <button id="next_question">次の問題</button>
+    </div>
+    <script src="./script.js"></script>
+</body>
+</html>

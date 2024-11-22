@@ -1,0 +1,239 @@
+html {
+    color: #333333;
+    font-family: "Noto Sans JP", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+}
+body {
+    margin: 0 max(30px, 5%);
+    margin-bottom: 10px;
+}
+button, input, textarea {
+    color: inherit;
+    font-family: inherit;
+    font-optical-sizing: inherit;
+    font-weight: inherit;
+    font-style: inherit;
+}
+input, textarea {
+    font-size: inherit;
+}
+button {
+    cursor: pointer;
+}
+button:disabled {
+    color: #999999;
+    cursor: default;
+}
+
+.header {
+    position: sticky;
+    top: 0;
+    right: 0;
+    left: 0;
+    background-color: white;
+    padding: 5px 0;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    align-content: space-between;
+    line-height: 1.9;
+}
+.header > div {
+    white-space: nowrap;
+}
+.header .returnButton {
+    background-color: ghostwhite;
+    border: none;
+    border-radius: 2px;
+    font-size: inherit;
+}
+.header .pageName {
+    display: inline-block;
+    margin-left: 10px;
+    font-size: 1.2rem;
+}
+.header .new {
+    background-color: #f5e9ff;
+    border: none;
+    border-radius: 2px;
+    font-size: inherit;
+}
+.header .sort {
+    background-color: #ffffbb;
+    border: none;
+    border-radius: 2px;
+    font-size: inherit;
+    margin-right: 7px;
+}
+#title {
+    display: inline-block;
+    font-size: 1.5rem;
+}
+
+#topList button, #questionsList button, #sort_last {
+    display: block;
+    width: 100%;
+    background-color: inherit;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    border-bottom: 2px solid #999999;
+    font-size: inherit;
+    padding: 10px 10px;
+}
+#topList button:hover, #questionsList button:hover, #sort_last:hover {
+    background-color: #f7f7f7;
+}
+#topList button:focus, #questionsList button:focus, #sort_last:focus {
+    background-color: #eaeaea;
+}
+#topList button {
+    text-align: center;
+}
+#questionsList button {
+    text-align: left;
+}
+#questionsList button span {
+    display: inline-block;
+    margin-right: 0.5rem;
+    background-color: lightskyblue;
+    border-radius: 4px;
+    padding: 0 4px;
+    color: white;
+}
+#sortDialog {
+    position: sticky;
+    width: fit-content;
+    max-width: 60vw;
+    height: fit-content;
+    bottom: 5vh;
+    margin: 5vh auto;
+    text-align: center;
+    background-color: white;
+    padding: 10px;
+    box-shadow: gray 0 0 5px;
+    border-radius: 3px;
+}
+#cancelSort {
+    margin-top: 7px;
+}
+#sort_last {
+    text-align: center;
+}
+
+#questionInput {
+    resize: vertical;
+    min-height: 7rem;
+    height: 7rem;
+    box-sizing: border-box;
+    width: 100%;
+}
+#answer1Input {
+    resize: vertical;
+    min-height: 3rem;
+    height: 3rem;
+    box-sizing: border-box;
+    width: 100%;
+}
+#answer2Input {
+    box-sizing: border-box;
+    width: 100%;
+}
+input:invalid {
+    border-color: red;
+    outline-color: red;
+    border-style: solid;
+}
+.includeAnswer, .notIncludeAnswer {
+    box-sizing: border-box;
+    width: calc(100% - 4rem);
+    margin-bottom: 7px;
+}
+.includeAnswer ~ button, .notIncludeAnswer ~ button {
+    box-sizing: border-box;
+    width: 3.5rem;
+    margin-left: 0.5rem;
+    background-color: inherit;
+    border: 1.6px solid #fa7a60;
+    border-radius: 3px;
+    font-size: inherit;
+}
+#addIncludeAnswerInput, #addNotIncludeAnswerInput {
+    width: 4rem;
+    margin: 5px 5px;
+    background-color: inherit;
+    border: 1.6px solid #7373ff;
+    border-radius: 3px;
+    font-size: inherit;
+}
+.heading {
+    font-size: 1.1rem;
+    margin-top: 10px;
+    margin-bottom: 4px;
+}
+#saveArea {
+    margin-top: 15px;
+}
+#saveChange {
+    width: 5rem;
+    padding: 3px;
+    background-color: inherit;
+    border: 1.6px solid #008000;
+    border-radius: 3px;
+    font-size: inherit;
+}
+
+.dialogButtonArea {
+    text-align: right;
+}
+
+#setNewQuestionListName {
+    border-radius: 5px;
+}
+#createQuestionList {
+    background-color: #a8d4ff;
+    border: 1.6px solid dodgerblue;
+    border-radius: 2px;
+}
+#cancelSettingQuestionList {
+    background-color: inherit;
+    border: 1.6px solid dodgerblue;
+    border-radius: 2px;
+}
+
+#cover {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background-color: #ffffffcc;
+    z-index: 1;
+}
+#loading {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background-color: #00000030;
+    z-index: 1;
+}
+#saving {
+    position: fixed;
+    width: fit-content;
+    height: fit-content;
+    top: 5vh;
+    right: 0;
+    left: 0;
+    margin: 0 auto;
+    background-color: white;
+    padding: 10px;
+    border-radius: 3px;
+    z-index: 2;
+}
