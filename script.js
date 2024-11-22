@@ -845,3 +845,25 @@ document.documentElement.addEventListener('fullscreenchange', event => {
         stopElement.dispatchEvent(buttonEvent);
     }
 });
+
+
+async function request(successHandler, failureHandler, method = "GET", body) {
+    const url = "https://script.google.com/macros/s/AKfycbxt6H7saDD4cD68IO-eYayjLcrJZMDNvQ-B8digshDX-K0oisBuXVnoRz2rGNeE3Cl_dQ/exec";
+    try {
+        const response = await fetch(url, {method: method, body: body});
+        if (!response.ok) {
+            if (failureHandler) failureHandler();
+            throw new Error(`レスポンスステータス: ${response.status}`);
+        }
+
+        const json = await response.json();
+        const text = await response.text();
+        console.log(json);
+        if (successHandler) successHandler();
+    } catch (error) {
+        console.error(error.message);
+    }
+}
+
+function requestGetData() {}
+function requestSetRecord() {}
