@@ -1,4 +1,4 @@
-let questionData = $questions;
+let questionData = JSON.parse(localStorage.getItem("data"));
 
 const topPage = document.getElementById("top");
 const questionPage = document.getElementById("questionList");
@@ -7,7 +7,7 @@ const coverElement = document.getElementById("cover");
 const loadingElement = document.getElementById("loading");
 const savingElement = document.getElementById("saving");
 
-let currentQuestionIndex = $questionIndex;
+let currentQuestionIndex = parseInt(new URL(window.location.href).searchParams.get("questionIndex") || "-1");
 let currentQuestionListName = "";
 let currentQuestionListLength = 0;
 let focusQuestionPageButton;
@@ -267,7 +267,44 @@ document.getElementById("saveChange").addEventListener('click', event => {
     if (data[0] != pastData[0] || data[1] != pastData[1] || data[2] != pastData[2] || data[3] != pastData[3] || data[4] != pastData[4]) {
         document.getElementById("whetherSave").textContent = "保存中";
         document.getElementById("saveChange").disabled = true;
-        google.script.run.withSuccessHandler(data => {
+        requestSetQuestion(data, currentQuestionIndex, currentQuestionListName, data => {
+            document.getElementById("saveChange").disabled = false;
+            questionData = data;
+            setTopPage();
+            setQuestionListPage(currentQuestionListName);
+            if (currentQuestionIndex >= 0 && (questionData[currentQuestionIndex] && questionData[currentQuestionIndex][5])) {
+                checkEdit();
+                if (editSaved) {
+                    coverElement.style.display = "";
+                    editPage.style.display = "none";
+                    questionPage.style.display = "";
+                    if (focusQuestionPageButton) focusQuestionPageButton.focus();
+                    currentQuestionIndex = -1;
+                    window.scrollTo(0, questionPageScroll);
+                    setTimeout(() => {
+                        requestAnimationFrame(() => {
+                            coverElement.style.display = "none";
+                        });
+                    }, 1);
+                }
+            } else if (currentQuestionIndex >= 0) {
+                editPage.style.display = "none";
+                topPage.style.display = "none";
+                questionPage.style.display = "";
+                currentQuestionIndex = -1;
+                window.scrollTo(0, questionPageScroll);
+            } else {
+                editPage.style.display = "none";
+                topPage.style.display = "none";
+                questionPage.style.display = "";
+                currentQuestionIndex = -1;
+                requestAnimationFrame(() => window.scrollTo(0, document.body.scrollHeight));
+            }
+        }, () => {
+            document.getElementById("saveChange").disabled = false;
+            checkEdit();
+        })
+        /*google.script.run.withSuccessHandler(data => {
             document.getElementById("saveChange").disabled = false;
             questionData = data;
             setTopPage();
@@ -304,7 +341,7 @@ document.getElementById("saveChange").addEventListener('click', event => {
             document.getElementById("saveChange").disabled = false;
             console.error(error.name + ": " + error.message);
             checkEdit();
-        }).setQuestion(data, currentQuestionIndex, currentQuestionListName);
+        }).setQuestion(data, currentQuestionIndex, currentQuestionListName);*/
     }
 });
 
@@ -374,7 +411,17 @@ function finishSort(questionNumber) {
         }
         loadingElement.style.display = "";
         savingElement.style.display = "";
-        google.script.run.withSuccessHandler(data => {
+        requestSetOrder(orderData, data => {
+            questionData = data;
+            setQuestionListPage(currentQuestionListName);
+            loadingElement.style.display = "none";
+            savingElement.style.display = "none";
+        }, () => {
+            alert("変更に失敗しました。");
+            loadingElement.style.display = "none";
+            savingElement.style.display = "none";
+        })
+        /*google.script.run.withSuccessHandler(data => {
             questionData = data;
             setQuestionListPage(currentQuestionListName);
             loadingElement.style.display = "none";
@@ -384,7 +431,7 @@ function finishSort(questionNumber) {
             alert("変更に失敗しました。");
             loadingElement.style.display = "none";
             savingElement.style.display = "none";
-        }).setOrder(orderData);
+        }).setOrder(orderData);*/
     }
     document.getElementById("returnToTop").disabled = false;
     document.getElementById("editOrder").disabled = false;
@@ -448,19 +495,47 @@ document.getElementById("returnToQuestionList").addEventListener('click', event 
 
 savingElement.style.display = "none";
 loadingElement.style.display = "none";
-if (currentQuestionIndex < 0) {
-    questionPage.style.display = "none";
-    editPage.style.display = "none";
-    setTopPage();
-} else {
-    topPage.style.display = "none";
-    questionPage.style.display = "none";
-    setTopPage();
-    setQuestionListPage(questionData[currentQuestionIndex][5].replace(/ #[0-9]+$/, ""));
-    setEditPage(currentQuestionIndex);
+requestGetAllQuestionData(data => {
+    questionData = data;
+
+    if (currentQuestionIndex < 0) {
+        questionPage.style.display = "none";
+        editPage.style.display = "none";
+        setTopPage();
+    } else {
+        topPage.style.display = "none";
+        questionPage.style.display = "none";
+        setTopPage();
+        setQuestionListPage(questionData[currentQuestionIndex][5].replace(/ #[0-9]+$/, ""));
+        setEditPage(currentQuestionIndex);
+    }
+    setTimeout(() => {
+        requestAnimationFrame(() => {
+            coverElement.style.display = "none";
+        });
+    }, 1);
+})
+
+
+async function request(successHandler, failureHandler, method = "GET", body = undefined, parameters = "") {
+    const url = "https://script.google.com/macros/s/AKfycbxt6H7saDD4cD68IO-eYayjLcrJZMDNvQ-B8digshDX-K0oisBuXVnoRz2rGNeE3Cl_dQ/exec" + parameters;
+
+    const response = await fetch(url, {method: method, body: body, headers: new Headers({"Accept": "application/json", "Content-Type": "application/x-www-form-urlencoded"})});
+    if (!response.ok) {
+        if (failureHandler) failureHandler();
+        throw new Error(`レスポンスステータス: ${response.status}`);
+    }
+
+    const json = await response.json();
+    if (successHandler) successHandler(json);
 }
-setTimeout(() => {
-    requestAnimationFrame(() => {
-        coverElement.style.display = "none";
-    });
-}, 1);
+
+function requestGetAllQuestionData(successHandler = undefined, failureHandler = undefined) {
+    request(successHandler, failureHandler, "GET", undefined, "?option=Only-Question");
+}
+function requestSetQuestion(data, questionIndex, questionListName, successHandler = undefined, failureHandler = undefined) {
+    request(successHandler, failureHandler, "POST", JSON.stringify({method:"setQuestion", parameters:[data, questionIndex, questionListName]}))
+}
+function requestSetOrder(data, successHandler = undefined, failureHandler = undefined) {
+    request(successHandler, failureHandler, "POST", JSON.stringify({method:"setOrder", parameters:[data]}))
+}

@@ -608,15 +608,10 @@ function onAnswerInputButtonClick(button) {
         }, 2000);
 
         if (!is_loading && record.length >= 1) {
-            google.script.run.withSuccessHandler(data => {
-                finishLoad();
+            requestSetRecord(record, data => {
                 record = [];
                 questionData = data;
-            }).withFailureHandler(error => {
-                finishLoad();
-                console.error(error);
-            }).setRecordToSheet(record);  // 記録を送信
-            startLoad();
+            });  // 記録を送信
         }
     } else if (inputAnswerCount >= answerChoise.length) {
         // 正解
@@ -745,20 +740,15 @@ const finishLoad = () => requestAnimationFrame(() => {
 if (localData) {
     startElement.addEventListener('click', main_event);
     questionElement.textContent = "";
-    google.script.run.withSuccessHandler(data => {
-        finishLoad();
+    requestGetData(data => {
         questionData  = data.questions;
         sameChars  = data.sameChars;
         notNextChars  = data.notNextChars;
         localStorage.setItem("data", JSON.stringify(data));
-    }).withFailureHandler(error => {
-        finishLoad();
-        console.error(error);
-    }).getData();
+    })
 } else {
     startElement.disabled = true;
-    google.script.run.withSuccessHandler(data => {
-        finishLoad();
+    requestGetData(data => {
         questionData  = data.questions;
         sameChars  = data.sameChars;
         notNextChars  = data.notNextChars;
@@ -766,24 +756,17 @@ if (localData) {
         questionElement.textContent = "";
         startElement.disabled = false;
         localStorage.setItem("data", JSON.stringify(data));
-    }).withFailureHandler(error => {
-        finishLoad();
-        console.error(error);
+    }, () => {
         questionElement.textContent = "データの読み込みに失敗しました。"
-    }).getData();
+    });
 }
 
 setInterval(() => {
     if (!is_loading && record.length >= 1 && is_active && document.visibilityState == "visible") {
-        google.script.run.withSuccessHandler(data => {
-            finishLoad();
+        requestSetRecord(record, data => {
             record = [];
             questionData = data;
-        }).withFailureHandler(error => {
-            finishLoad();
-            console.error(error);
-        }).setRecordToSheet(record);
-        startLoad();
+        });
     }
 }, 60000);
 
@@ -804,15 +787,10 @@ stopElement.addEventListener('click', event => {
 
 
     if (!is_loading && record.length >= 1) {
-        google.script.run.withSuccessHandler(data => {
-            finishLoad();
+        requestSetRecord(record, data => {
             record = [];
             questionData = data;
-        }).withFailureHandler(error => {
-            finishLoad();
-            console.error(error);
-        }).setRecordToSheet(record);  // 記録を送信
-        startLoad();
+        })  // 記録を送信
     }
 
     document.getElementById("makingQuestionLink").style.display = "";
@@ -845,3 +823,26 @@ document.documentElement.addEventListener('fullscreenchange', event => {
         stopElement.dispatchEvent(buttonEvent);
     }
 });
+
+
+async function request(successHandler, failureHandler, method = "GET", body = undefined, parameters = "") {
+    const url = "https://script.google.com/macros/s/AKfycbxt6H7saDD4cD68IO-eYayjLcrJZMDNvQ-B8digshDX-K0oisBuXVnoRz2rGNeE3Cl_dQ/exec" + parameters;
+
+    startLoad();
+    const response = await fetch(url, {method: method, body: body, headers: new Headers({"Accept": "application/json", "Content-Type": "application/x-www-form-urlencoded"})});
+    finishLoad();
+    if (!response.ok) {
+        if (failureHandler) failureHandler();
+        throw new Error(`レスポンスステータス: ${response.status}`);
+    }
+
+    const json = await response.json();
+    if (successHandler) successHandler(json);
+}
+
+function requestGetData(successHandler = undefined, failureHandler = undefined) {
+    request(successHandler, failureHandler);
+}
+function requestSetRecord(record, successHandler = undefined, failureHandler = undefined) {
+    request(successHandler, failureHandler, "POST", JSON.stringify({method:"setRecord", parameters:[record]}))
+}
