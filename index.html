@@ -256,7 +256,7 @@
       </div>
       <div>
         <div id="loading">通信中</div>
-        <a href="https://script.google.com/macros/s/AKfycbxt6H7saDD4cD68IO-eYayjLcrJZMDNvQ-B8digshDX-K0oisBuXVnoRz2rGNeE3Cl_dQ/exec?page=makingQuestion" id="makingQuestionLink" target="_top">作問</a>
+        <a href="https://script.google.com/macros/s/AKfycbxt6H7saDD4cD68IO-eYayjLcrJZMDNvQ-B8digshDX-K0oisBuXVnoRz2rGNeE3Cl_dQ/exec?page=makingQuestion" id="makingQuestionLink">作問</a>
       </div>
     </div>
     <div id="answer_input_cover">
@@ -1066,6 +1066,10 @@
           stopElement.dispatchEvent(buttonEvent);
         }
       });
+
+      if(!window.matchMedia('(display-mode: standalone)').matches){
+        document.getElementById("makingQuestionLink").target = "_brank";
+      }
 
 
 
