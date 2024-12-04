@@ -94,6 +94,9 @@
         border-radius: 5px;
         border: none;
       }
+      #answer_button:disabled {
+        cursor: default;
+      }
       #next_question {
         min-width: 50%;
         height: 10vh;
@@ -626,6 +629,9 @@
 
         document.getElementById("makingQuestionLink").href = "https://script.google.com/macros/s/AKfycbxt6H7saDD4cD68IO-eYayjLcrJZMDNvQ-B8digshDX-K0oisBuXVnoRz2rGNeE3Cl_dQ/exec?page=makingQuestion&questionIndex=" + questionData[nowQuestionIndex][8];
 
+        answerButton.disabled = true;
+        setTimeout(() => answerButton.disabled = false, 1000);
+
         let requestID = 0;
         intervalId = setInterval(() => {
           if (continueProcess && document.visibilityState == "visible") {
@@ -649,27 +655,8 @@
                   } else {
                     countdown = 0;
                     // 不正解
-                    //clearInterval(intervalId);
+                    clearInterval(intervalId);
                     //onIncorrect();
-                    /*inputAnswerCount = answerChoise.length;
-
-                    requestAnimationFrame(() => {
-                      incorrectElement.style.display = "";
-                    });
-                    setRecord(nowQuestionIndex, false);
-
-                    setTimeout(() => {
-                      requestAnimationFrame(() => {
-                        incorrectElement.style.display = "none";
-                      });
-
-                      answer1Element.textContent = nowQuestion[1];
-                      answer2Element.textContent = nowQuestion[2];
-
-                      answerButton.style.display = "none";
-                      nextQuestionButton.style.display = "";
-                      nextQuestionButton.addEventListener('click', main_event);
-                    }, 2000);*/
                   }
                 }
               }, 10);
@@ -782,60 +769,6 @@
           if (inputCountdown <= 0) {
             // 不正解
             onIncorrect();
-            /*inputtingAnswer = false;
-            clearInterval(inputIntervalId);
-            clearInterval(intervalId);
-            continueProcess = true;
-            inputAnswerCount = answerChoise.length;
-
-            button1.disabled = true;
-            button2.disabled = true;
-            button3.disabled = true;
-            button4.disabled = true;
-            button5.disabled = true;
-            button6.disabled = true;
-            button7.disabled = true;
-            button8.disabled = true;
-
-            requestAnimationFrame(() => {
-              incorrectElement.style.display = "";
-            });
-            setRecord(nowQuestionIndex, false);
-
-            setTimeout(() => {
-              requestAnimationFrame(() => {
-                incorrectElement.style.display = "none";
-                answerInputElement.style.display = "none";
-              });
-              button1.disabled = false;
-              button2.disabled = false;
-              button3.disabled = false;
-              button4.disabled = false;
-              button5.disabled = false;
-              button6.disabled = false;
-              button7.disabled = false;
-              button8.disabled = false;
-
-              intervalId = setInterval(() => {
-                if (nowShowWordCount < nowQuestion[0].length) {
-                  const text = nowQuestion[0].slice(0, ++nowShowWordCount);
-                  questionElement.textContent = text;
-                } else {
-                  clearInterval(intervalId);  // 問題の表示終了
-
-                  setTimeout(() => {
-                    answer1Element.textContent = nowQuestion[1];
-                    answer2Element.textContent = nowQuestion[2];
-
-                    answerButton.style.display = "none";
-                    nextQuestionButton.style.display = "";
-                    nextQuestionButton.addEventListener('click', main_event);
-                  }, 300);
-                }
-              }, 50);
-            }, 2000);
-
-            answerInputElement.style.display = "none";*/
           }
         }, 10)
       }
@@ -857,57 +790,6 @@
         if (answerIndex != 0) {
           // 不正解
           onIncorrect();
-          /*inputtingAnswer = false;
-          clearInterval(intervalId);
-          continueProcess = true;
-          inputAnswerCount = answerChoise.length;
-
-          button1.disabled = true;
-          button2.disabled = true;
-          button3.disabled = true;
-          button4.disabled = true;
-          button5.disabled = true;
-          button6.disabled = true;
-          button7.disabled = true;
-          button8.disabled = true;
-
-          requestAnimationFrame(() => {
-            incorrectElement.style.display = "";
-          });
-          setRecord(nowQuestionIndex, false);
-
-          setTimeout(() => {
-            requestAnimationFrame(() => {
-              incorrectElement.style.display = "none";
-              answerInputElement.style.display = "none";
-            });
-            button1.disabled = false;
-            button2.disabled = false;
-            button3.disabled = false;
-            button4.disabled = false;
-            button5.disabled = false;
-            button6.disabled = false;
-            button7.disabled = false;
-            button8.disabled = false;
-
-            intervalId = setInterval(() => {
-              if (nowShowWordCount < nowQuestion[0].length) {
-                const text = nowQuestion[0].slice(0, ++nowShowWordCount);
-                questionElement.textContent = text;
-              } else {
-                clearInterval(intervalId);  // 問題の表示終了
-
-                setTimeout(() => {
-                  answer1Element.textContent = nowQuestion[1];
-                  answer2Element.textContent = nowQuestion[2];
-
-                  answerButton.style.display = "none";
-                  nextQuestionButton.style.display = "";
-                  nextQuestionButton.addEventListener('click', main_event);
-                }, 300);
-              }
-            }, 50);
-          }, 2000);*/
 
           if (!is_loading && record.length >= 1) {
             requestSetRecord(record, data => {
@@ -918,56 +800,6 @@
         } else if (inputAnswerCount >= answerChoise.length) {
           // 正解
           onCorrect();
-          /*inputtingAnswer = false;
-          clearInterval(intervalId);
-          continueProcess = true;
-
-          button1.disabled = true;
-          button2.disabled = true;
-          button3.disabled = true;
-          button4.disabled = true;
-          button5.disabled = true;
-          button6.disabled = true;
-          button7.disabled = true;
-          button8.disabled = true;
-
-          requestAnimationFrame(() => {
-            correctElement.style.display = "";
-          });
-          setRecord(nowQuestionIndex, true);
-
-          setTimeout(() => {
-            requestAnimationFrame(() => {
-              correctElement.style.display = "none";
-              answerInputElement.style.display = "none";
-            });
-            button1.disabled = false;
-            button2.disabled = false;
-            button3.disabled = false;
-            button4.disabled = false;
-            button5.disabled = false;
-            button6.disabled = false;
-            button7.disabled = false;
-            button8.disabled = false;
-
-            intervalId = setInterval(() => {
-              if (nowShowWordCount < nowQuestion[0].length) {
-                const text = nowQuestion[0].slice(0, ++nowShowWordCount);
-                questionElement.textContent = text;
-              } else {
-                clearInterval(intervalId);  // 問題の表示終了
-
-                setTimeout(() => {
-                  answer1Element.textContent = nowQuestion[1];
-                  answer2Element.textContent = nowQuestion[2];
-
-                  answerButton.style.display = "none";
-                  nextQuestionButton.style.display = "";
-                  nextQuestionButton.addEventListener('click', main_event);
-                }, 300);
-              }
-            }, 50);
-          }, 2000);*/
         } else {
           settingAnswerInputButton();
         }
