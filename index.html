@@ -427,7 +427,7 @@
       let inputCountdown = 500;  // 解答入力のカウントダウンの秒数(100が1秒)
       let inputIntervalId;  // 解答入力のインターバルのid
       let continueProcess = true;  // カウントダウンを継続するか
-      let is_active = true; // 一時停止されていないか
+      let is_active = false; // 一時停止されていないか
       let inputAnswer = "";  // 入力された解答
       let inputAnswerCount = 0;  // 入力された解答の文字数
       let inputtingAnswer = false;  // 解答の入力受付中かどうか
@@ -437,6 +437,7 @@
       let lastQuestionIndex = [];  // 前回の問題のインデックス
       let record = [];  // 正答数、出題数の記録
       let record_session = [];  // 現在のセッションにおける正答数、出題数、前回出されてからの他の問題の出題数の記録
+      let is_review = false;  // 間違えた問題の再出題かどうか
 
       function main() {
 
@@ -444,7 +445,6 @@
           let questionIndexList = [];
 
           let average = 0;
-          console.log(questionData);
           for (let i = 0; i < questionData.length; i++) {
             average += questionData[i][7] || 0;
           }
@@ -455,6 +455,7 @@
               const rate_session = record_session[i][0] / record_session[i][1];
               if (rate_session < 0.7) {
                 if (record_session[i][2] >=  (rate_session * 8) + 4) {
+                  is_review = true;
                   return i;
                 }
               }
@@ -479,6 +480,7 @@
               questionIndexList.push(i);
             }
           }
+          is_review = false;
           return questionIndexList[Math.floor(Math.random() * questionIndexList.length)];
         }
 
@@ -667,15 +669,18 @@
 
       function main_event(event) {
         event.target.removeEventListener('click', main_event);
+        if (!is_active) startElement.dispatchEvent(new Event('click'));
         main();
       }
 
       function setRecord(questionIndex_onData, correct) {
         const questionIndex = questionData[questionIndex_onData][8];
 
-        if (!record[questionIndex]) record[questionIndex] = [0, 0];
-        record[questionIndex][1] += 1;
-        if (correct) record[questionIndex][0] += 1;
+        if (!is_review) {
+          if (!record[questionIndex]) record[questionIndex] = [0, 0];
+          record[questionIndex][1] += 1;
+          if (correct) record[questionIndex][0] += 1;
+        }
 
         if (!record_session[questionIndex_onData]) record_session[questionIndex_onData] = [0, 0, 0];
         record_session[questionIndex_onData][1] += 1;
@@ -685,10 +690,15 @@
         }
         record_session[questionIndex_onData][2] = 0;
 
-        if (!questionData[questionIndex_onData][6]) questionData[questionIndex_onData][6] = 0;
-        if (!questionData[questionIndex_onData][7]) questionData[questionIndex_onData][7] = 0;
-        questionData[questionIndex_onData][7] += 1;
-        if (correct) questionData[questionIndex_onData][6] += 1;
+        if (!is_review) {
+          if (!questionData[questionIndex_onData][6]) questionData[questionIndex_onData][6] = 0;
+          if (!questionData[questionIndex_onData][7]) questionData[questionIndex_onData][7] = 0;
+          questionData[questionIndex_onData][7] += 1;
+          if (correct) questionData[questionIndex_onData][6] += 1;
+        }
+
+        localStorage.setItem("record_session", JSON.stringify(record_session));
+        localStorage.setItem("record", JSON.stringify(record));
       }
 
       function getRandomAnswerButtonIndex() {
@@ -956,7 +966,7 @@
           
       correctElement.style.display = "none";
       incorrectElement.style.display = "none";
-      nextQuestionButton.style.display = "none";
+      answerButton.style.display = "none";
           
       answerInputElement.style.display = "none";
       let localData;
@@ -968,6 +978,11 @@
           sameChars  = localData.sameChars;
           notNextChars  = localData.notNextChars;
         }
+
+        let localRecordSession = localStorage.getItem("record_session");
+        if (localRecordSession) record_session = JSON.parse(localRecordSession);
+        let localRecord = localStorage.getItem("record");
+        if (localRecord) record = JSON.parse(localRecord);
       } catch (error) {
         console.error(error);
       }
@@ -981,23 +996,25 @@
         is_loading = false;
       });
       if (localData) {
-        startElement.addEventListener('click', main_event);
+        nextQuestionButton.addEventListener('click', main_event);
         questionElement.textContent = "";
         requestGetData(data => {
           questionData  = data.questions;
           sameChars  = data.sameChars;
           notNextChars  = data.notNextChars;
           localStorage.setItem("data", JSON.stringify(data));
-        })
+        });
       } else {
         startElement.disabled = true;
+        nextQuestionButton.disabled = true;
         requestGetData(data => {
           questionData  = data.questions;
           sameChars  = data.sameChars;
           notNextChars  = data.notNextChars;
-          startElement.addEventListener('click', main_event);
+          nextQuestionButton.addEventListener('click', main_event);
           questionElement.textContent = "";
           startElement.disabled = false;
+          nextQuestionButton.disabled = false;
           localStorage.setItem("data", JSON.stringify(data));
         }, () => {
           questionElement.textContent = "データの読み込みに失敗しました。"
