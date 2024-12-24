@@ -187,7 +187,7 @@
         right: 0;
         left: 0;
         bottom: 0;
-        font-size: 20vw;
+        font-size: min(20vw, 7rem);
         color: red;
         z-index: 3;
       }
@@ -201,7 +201,7 @@
         right: 0;
         left: 0;
         bottom: 0;
-        font-size: 20vw;
+        font-size: min(20vw, 7rem);
         color: blue;
         z-index: 3;
       }
@@ -442,6 +442,30 @@
       function main() {
 
         function getQuestionIndex() {
+          if (!is_review) {  // 前回の問題が復習でなかったとき
+            const indexArray = [];
+            for (let i = 0; i < record_session.length; i++) {
+              if (!record_session[i]) continue;
+              indexArray.push(i);
+            }
+            while (indexArray.length > 0) {
+              const index = indexArray[Math.floor(Math.random() * indexArray.length)];
+
+              const rate_session = record_session[index][0] / record_session[index][1];
+              if (rate_session <= 0.5 || record_session[index][1] < 5) {
+                if (record_session[index][2] >=  (rate_session * 8) + 4) {
+                  is_review = true;
+                  return index;
+                }
+              } else {
+                record_session[index] = undefined;
+              }
+
+              indexArray.splice(index, 1);
+            }
+          }
+
+
           let questionIndexList = [];
 
           let average = 0;
@@ -451,16 +475,6 @@
           average = average / questionData.length;
 
           for (let i = 0; i < questionData.length; i++) {
-            if (record_session[i]) {
-              const rate_session = record_session[i][0] / record_session[i][1];
-              if (rate_session < 0.7) {
-                if (record_session[i][2] >=  (rate_session * 8) + 4) {
-                  is_review = true;
-                  return i;
-                }
-              }
-            }
-
             if (questionData.length > lastQuestionIndex.length && lastQuestionIndex.includes(i)) continue;
 
             questionIndexList.push(i);
@@ -628,6 +642,7 @@
 
         lastQuestionIndex.push(nowQuestionIndex);
         if (lastQuestionIndex.length > 20) lastQuestionIndex.shift();
+        localStorage.setItem("last_question", nowQuestionIndex.toString());
 
         document.getElementById("makingQuestionLink").href = "https://script.google.com/macros/s/AKfycbxt6H7saDD4cD68IO-eYayjLcrJZMDNvQ-B8digshDX-K0oisBuXVnoRz2rGNeE3Cl_dQ/exec?page=makingQuestion&questionIndex=" + questionData[nowQuestionIndex][8];
 
@@ -682,13 +697,15 @@
           if (correct) record[questionIndex][0] += 1;
         }
 
-        if (!record_session[questionIndex_onData]) record_session[questionIndex_onData] = [0, 0, 0];
-        record_session[questionIndex_onData][1] += 1;
-        if (correct) record_session[questionIndex_onData][0] += 1;
-        for (let i = 0; i < record_session.length; i++) {
-          if (record_session[i]) record_session[i][2]++;
+        if (is_review || !correct) {
+          if (!record_session[questionIndex_onData]) record_session[questionIndex_onData] = [0, 0, 0];
+          record_session[questionIndex_onData][1] += 1;
+          if (correct) record_session[questionIndex_onData][0] += 1;
+          for (let i = 0; i < record_session.length; i++) {
+            if (record_session[i]) record_session[i][2]++;
+          }
+          record_session[questionIndex_onData][2] = 0;
         }
-        record_session[questionIndex_onData][2] = 0;
 
         if (!is_review) {
           if (!questionData[questionIndex_onData][6]) questionData[questionIndex_onData][6] = 0;
@@ -977,12 +994,21 @@
           questionData  = localData.questions;
           sameChars  = localData.sameChars;
           notNextChars  = localData.notNextChars;
+          questionElement.textContent = "";
         }
 
         let localRecordSession = localStorage.getItem("record_session");
         if (localRecordSession) record_session = JSON.parse(localRecordSession);
         let localRecord = localStorage.getItem("record");
         if (localRecord) record = JSON.parse(localRecord);
+
+        let lastQuestion_before = localStorage.getItem("last_question");
+        if (lastQuestion_before) {
+          lastQuestion_before = parseInt(lastQuestion_before);
+          questionElement.textContent = questionData[lastQuestion_before][0];
+          answer1Element.textContent = questionData[lastQuestion_before][1];
+          answer2Element.textContent = questionData[lastQuestion_before][2];
+        }
       } catch (error) {
         console.error(error);
       }
@@ -997,7 +1023,6 @@
       });
       if (localData) {
         nextQuestionButton.addEventListener('click', main_event);
-        questionElement.textContent = "";
         requestGetData(data => {
           questionData  = data.questions;
           sameChars  = data.sameChars;

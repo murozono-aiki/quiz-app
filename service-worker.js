@@ -1,4 +1,4 @@
-var cacheName = "QuizAppPWA-v10.5+1";
+var cacheName = "QuizAppPWA-v10.7";
 var appShellFiles = [
   "./index.html",
   "./script.js",
