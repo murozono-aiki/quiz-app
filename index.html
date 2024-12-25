@@ -446,10 +446,12 @@
             const indexArray = [];
             for (let i = 0; i < record_session.length; i++) {
               if (!record_session[i]) continue;
-              indexArray.push(i);
-            }
+              const index = i;
+              indexArray.push(index);
+            }console.log(indexArray);
             while (indexArray.length > 0) {
-              const index = indexArray[Math.floor(Math.random() * indexArray.length)];
+              const arrayIndex = Math.floor(Math.random() * indexArray.length);
+              const index = indexArray[arrayIndex];
 
               const rate_session = record_session[index][0] / record_session[index][1];
               if (rate_session <= 0.5 || record_session[index][1] < 5) {
@@ -461,7 +463,7 @@
                 record_session[index] = undefined;
               }
 
-              indexArray.splice(index, 1);
+              indexArray.splice(arrayIndex, 1);
             }
           }
 
@@ -701,10 +703,10 @@
           if (!record_session[questionIndex_onData]) record_session[questionIndex_onData] = [0, 0, 0];
           record_session[questionIndex_onData][1] += 1;
           if (correct) record_session[questionIndex_onData][0] += 1;
-          for (let i = 0; i < record_session.length; i++) {
-            if (record_session[i]) record_session[i][2]++;
-          }
           record_session[questionIndex_onData][2] = 0;
+        }
+        for (let i = 0; i < record_session.length; i++) {
+          if (record_session[i]) record_session[i][2]++;
         }
 
         if (!is_review) {
