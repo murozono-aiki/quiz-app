@@ -52,9 +52,13 @@ async function networkResponse(request) {
 * @param {Request} request
 */
 async function cache(request) {
-  const cacheResponsePromise = cacheResponse(request);
-  const networkResponsePromise = networkResponse(request);
-  return (await cacheResponsePromise) || (await networkResponsePromise);
+  if (request.method == "GET") {
+    const cacheResponsePromise = cacheResponse(request);
+    const networkResponsePromise = networkResponse(request);
+    return (await cacheResponsePromise) || (await networkResponsePromise);
+} else {
+    return await fetch(request);
+}
 }
 
 /**
