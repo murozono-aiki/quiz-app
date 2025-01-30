@@ -11,6 +11,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
 
+    <script>
+      let url = "";
+      try {
+        url = localStorage.getItem("quiz-app-URL");
+      } catch(error) {
+        console.error(error);
+      }
+    </script>
+
 
 
 
@@ -37,6 +46,13 @@
       }
       button {
         cursor: pointer;
+      }
+      dialog {
+        border-radius: 7px;
+        min-width: 40vw;
+      }
+      .form-submit {
+        text-align: right;
       }
 
       #countdown {
@@ -298,6 +314,20 @@
       <button id="answer_button">解答</button>
       <button id="next_question">次の問題</button>
     </div>
+
+    <dialog id="firstDialog">
+      <p id="firstDialogMessage">
+        URLを入力してください。
+      </p>
+      <form method="dialog" id="firstForm">
+        <label for="API-input">API URL</label><br>
+        <input type="url" id="API-input">
+        <div class="form-submit">
+          <button type="submit">決定</button>
+        </div>
+      </form>
+    </dialog>
+
     <script>
       let questionData;
       let sameChars;
@@ -1119,18 +1149,27 @@
 
 
       async function request(successHandler, failureHandler, method = "GET", body = undefined, parameters = "") {
-        const url = "https://script.google.com/macros/s/AKfycbxt6H7saDD4cD68IO-eYayjLcrJZMDNvQ-B8digshDX-K0oisBuXVnoRz2rGNeE3Cl_dQ/exec" + parameters;
+        if (url && URL.canParse(url)) {
+          const urlWithParameters = url + parameters;
 
-        startLoad();
-        const response = await fetch(url, {method: method, body: body, headers: new Headers({"Accept": "application/json", "Content-Type": "application/x-www-form-urlencoded"})});
-        finishLoad();
-        if (!response.ok) {
-          if (failureHandler) failureHandler();
-          throw new Error(`レスポンスステータス: ${response.status}`);
+          startLoad();
+          const response = await fetch(urlWithParameters, {method: method, body: body});
+          finishLoad();
+          if (!response.ok) {
+            if (failureHandler) failureHandler();
+            throw new Error(`レスポンスステータス: ${response.status}`);
+          }
+
+          const json = await response.json();
+          if (successHandler) successHandler(json);
+        } else {
+          document.getElementById("firstForm").addEventListener("submit", event => {
+            url = document.getElementById("API-input").value;
+            if (url) localStorage.setItem("quiz-app-URL", url);
+            request(successHandler, failureHandler, method, body, parameters);
+          }, {once: true});
+          document.getElementById("firstDialog").showModal();
         }
-
-        const json = await response.json();
-        if (successHandler) successHandler(json);
       }
 
       function requestGetData(successHandler = undefined, failureHandler = undefined) {
