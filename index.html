@@ -24,6 +24,8 @@
 
 
 
+
+
     <style>
       html {
         color: #333333;
@@ -255,6 +257,46 @@
         border-radius: 3px;
         border: 1px solid #ccccff;
       }
+      #openSetting {
+        text-decoration: none;
+        color: inherit;
+        display: inline-block;
+        width: 3rem;
+        padding: 0.2rem 0;
+        background-color: #f5e9ff;
+        text-align: center;
+        border-radius: 3px;
+        border: 1px solid #deb3ff;
+        font-size: 0.85rem;
+      }
+      #openSetting:hover {
+        box-shadow: lightgray 0 0 7px;
+      }
+      #setting > * {
+        margin-top: 15px;
+        margin-bottom: 15px;
+      }
+      #closeSetting {
+        text-decoration: none;
+        color: inherit;
+        display: inline-block;
+        width: 3rem;
+        padding: 0.2rem 0;
+        background-color: #ffffff;
+        text-align: center;
+        border-radius: 3px;
+        border: 1px solid #c5c5c5;
+        font-size: 0.85rem;
+      }
+      #closeSetting:hover {
+        box-shadow: lightgray 0 0 7px;
+      }
+      #questionSelect > div {
+        margin-top: 4px;
+      }
+      #questionSelect > div > label {
+        margin-right: 4px;
+      }
       #makingQuestionLink {
         text-decoration: none;
         color: inherit;
@@ -280,7 +322,12 @@
       </div>
       <div>
         <div id="loading">通信中</div>
-        <a href="" id="makingQuestionLink">作問</a>
+        <button id="openSetting">設定</button>
+        <dialog id="setting">
+          <button id="closeSetting" autofocus>閉じる</button>
+          <div id="questionSelect"></div>
+          <a href="" id="makingQuestionLink">作問</a>
+        </dialog>
       </div>
     </div>
     <div id="answer_input_cover">
@@ -437,29 +484,60 @@
       const symbols = ["ー", "-", "＝", "=", "・"];
 
           
+      /** @type {HTMLDivElement} */
       const questionElement = document.getElementById("question");  // 問題を表示する要素
+      /** @type {HTMLDivElement} */
       const answer1Element = document.getElementById("answer1");  // 解答を表示する要素
+      /** @type {HTMLDivElement} */
       const answer2Element = document.getElementById("answer2");  // 解答（答えるとき）を表示する要素
+      /** @type {HTMLDivElement} */
       const questionLabelElement = document.getElementById("questionLabel");  // 問題のラベルを表示する要素
+      /** @type {HTMLProgressElement} */
       const countdownElement = document.getElementById("countdown");  // プログレスバー
+      /** @type {HTMLLabelElement} */
       const countdownLabelElement = document.getElementById("countdown_label");  // プログレスバーの横の数字を表示する要素
+      /** @type {HTMLButtonElement} */
       const answerButton = document.getElementById("answer_button");  // 解答の入力を開始するボタン
+      /** @type {HTMLDivElement} */
       const answerInputElement = document.getElementById("answer_input_cover");  // 解答入力欄
+      /** @type {HTMLDivElement} */
       const answerInputShowElement = document.getElementById("answer_input_write");  // 入力された解答を表示する要素
+      /** @type {HTMLButtonElement} */
       const answerInputButton1 = document.getElementById("button1");  // 解答を入力するボタン1
+      /** @type {HTMLButtonElement} */
       const answerInputButton2 = document.getElementById("button2");  // 解答を入力するボタン2
+      /** @type {HTMLButtonElement} */
       const answerInputButton3 = document.getElementById("button3");  // 解答を入力するボタン3
+      /** @type {HTMLButtonElement} */
       const answerInputButton4 = document.getElementById("button4");  // 解答を入力するボタン4
+      /** @type {HTMLButtonElement} */
       const answerInputButton5 = document.getElementById("button5");  // 解答を入力するボタン5
+      /** @type {HTMLButtonElement} */
       const answerInputButton6 = document.getElementById("button6");  // 解答を入力するボタン6
+      /** @type {HTMLButtonElement} */
       const answerInputButton7 = document.getElementById("button7");  // 解答を入力するボタン7
+      /** @type {HTMLButtonElement} */
       const answerInputButton8 = document.getElementById("button8");  // 解答を入力するボタン8
+      /** @type {HTMLDivElement} */
       const inputCountdownElement = document.getElementById("inputCountdown");  // 解答入力の際のカウントダウン
+      /** @type {HTMLDivElement} */
       const correctElement = document.getElementById("correct");  // 正解のときの要素
+      /** @type {HTMLDivElement} */
       const incorrectElement = document.getElementById("incorrect");  // 不正解のときの要素
+      /** @type {HTMLButtonElement} */
       const nextQuestionButton = document.getElementById("next_question");  // 次の問題を出題するボタン
+      /** @type {HTMLButtonElement} */
       const stopElement = document.getElementById("stopProcess");  // 一時停止ボタン
+      /** @type {HTMLButtonElement} */
       const startElement = document.getElementById("startProcess");  // 再開ボタン
+      /** @type {HTMLButtonElement} */
+      const settingButton = document.getElementById("openSetting");  // 設定表示ボタン
+      /** @type {HTMLDialogElement} */
+      const settingDialog = document.getElementById("setting");  // 設定のダイアログ
+      /** @type {HTMLButtonElement} */
+      const settingCloseButton = document.getElementById("closeSetting");  // 設定非表示ボタン
+      /** @type {HTMLDivElement} */
+      const questionSelectElement = document.getElementById("questionSelect");  // 問題選択要素
       let nowQuestion;  // 現在の問題（配列）
       let nowShowWordCount = 0;  // 現在の問題の表示文字数
       let countdown = 900;  // カウントダウンの秒数(100が1秒)
@@ -478,6 +556,10 @@
       let record = [];  // 正答数、出題数の記録
       let record_session = [];  // 現在のセッションにおける正答数、出題数、前回出されてからの他の問題の出題数の記録
       let is_review = false;  // 間違えた問題の再出題かどうか
+      /**
+       * @type {Object.<string, {is_question:boolean, range:boolean, range_min:number, range_max:number}>}
+      */
+      let questionSelect = {};
 
       function main() {
 
@@ -487,6 +569,17 @@
             for (let i = 0; i < record_session.length; i++) {
               if (!record_session[i]) continue;
               const index = i;
+
+              const questionLabel = questionData[index][5].split(" #");
+              const questionName = questionLabel[0];
+              const questionNumber = parseInt(questionLabel[1]);
+              if (!questionSelect[questionName].is_question) continue;
+              if (questionSelect[questionName].range) {
+                if (questionNumber < questionSelect[questionName].range_min || questionSelect[questionName].range_max < questionNumber) {
+                  continue;
+                }
+              }
+
               indexArray.push(index);
             }
             while (indexArray.length > 0) {
@@ -517,7 +610,16 @@
           average = average / questionData.length;
 
           for (let i = 0; i < questionData.length; i++) {
-            if (questionData.length > lastQuestionIndex.length && lastQuestionIndex.includes(i)) continue;
+            if (questionData.length > lastQuestionIndex.length && lastQuestionIndex.includes(i)) continue;  // 直近に出した問題は出題しない
+            const questionLabel = questionData[i][5].split(" #");
+            const questionName = questionLabel[0];
+            const questionNumber = parseInt(questionLabel[1]);
+            if (!questionSelect[questionName].is_question) continue;
+            if (questionSelect[questionName].range) {
+              if (questionNumber < questionSelect[questionName].range_min || questionSelect[questionName].range_max < questionNumber) {
+                continue;
+              }
+            }
 
             questionIndexList.push(i);
             let loopIndex_average = (average - questionData[i][7]) * 8/*問題の出やすさ*/;
@@ -1025,6 +1127,109 @@
         }, 2000);
       }
 
+      function setQuestionSelect() {
+        /** @type {Object.<string, {min:number, max:number}>} */
+        let questionLabelData = {};
+        /** @type {string[]} */
+        let questionNames = [];
+        for (let question of questionData) {
+          const label = question[5].split(" #");
+          const questionName = label[0];
+          const questionNumber = parseInt(label[1]);
+          if (!questionLabelData[questionName]) {
+            questionLabelData[questionName] = {min: Infinity, max: -Infinity};
+            questionNames.push(questionName);
+          }
+          if (!questionSelect[questionName]) {
+            questionSelect[questionName] = {is_question: true, range: false, range_min: -Infinity, range_max: Infinity};
+          }
+          if (questionLabelData[questionName].min > questionNumber) {
+            questionLabelData[questionName].min = questionNumber;
+          }
+          if (questionLabelData[questionName].max < questionNumber) {
+            questionLabelData[questionName].max = questionNumber;
+          }
+        }
+        const collator = new Intl.Collator("ja");
+        questionNames.sort(collator.compare);
+
+        while (questionSelectElement.firstChild) {
+          questionLabelElement.removeChild(questionSelectElement.firstChild);
+        }
+        for (let i = 0; i < questionNames.length; i++) {
+          const questionName = questionNames[i];
+          const questionLabel = questionLabelData[questionName];
+          const questionSelectContainer = document.createElement("div");
+          questionSelectElement.appendChild(questionSelectContainer);
+          const questionSelectLabel = document.createElement("label");
+          questionSelectContainer.appendChild(questionSelectLabel);
+          const questionSelectInput = document.createElement("input");
+          questionSelectLabel.appendChild(questionSelectInput);
+          questionSelectInput.type = "checkbox";
+          questionSelectInput.checked = true;
+          questionSelectLabel.appendChild(document.createTextNode(questionName));
+          const questionRangeMinElement = document.createElement("input");
+          questionSelectContainer.appendChild(questionRangeMinElement);
+          questionRangeMinElement.type = "text";
+          questionRangeMinElement.inputMode = "numeric";
+          questionRangeMinElement.min = questionLabel.min;
+          questionRangeMinElement.max = questionLabel.max;
+          questionRangeMinElement.style.width = "3rem";
+          questionSelectContainer.appendChild(document.createTextNode("～"));
+          const questionRangeMaxElement = document.createElement("input");
+          questionSelectContainer.appendChild(questionRangeMaxElement);
+          questionRangeMaxElement.type = "text";
+          questionRangeMaxElement.inputMode = "numeric";
+          questionRangeMaxElement.min = questionLabel.min;
+          questionRangeMaxElement.max = questionLabel.max;
+          questionRangeMaxElement.style.width = "3rem";
+
+          questionSelectInput.addEventListener("change", event => {
+            questionSelect[questionName].is_question = questionSelectInput.checked;
+          });
+          questionRangeMinElement.addEventListener("change", event => {
+            let value = questionRangeMinElement.value;
+            value = value.replaceAll("０", "0");
+            value = value.replaceAll("１", "1");
+            value = value.replaceAll("２", "2");
+            value = value.replaceAll("３", "3");
+            value = value.replaceAll("４", "4");
+            value = value.replaceAll("５", "5");
+            value = value.replaceAll("６", "6");
+            value = value.replaceAll("７", "7");
+            value = value.replaceAll("８", "8");
+            value = value.replaceAll("９", "9");
+            questionRangeMinElement.value = value;
+            if (value !== "") {
+              questionSelect[questionName].range = true;
+              questionSelect[questionName].range_min = parseInt(value);
+            } else {
+              questionSelect[questionName].range_min = -Infinity;
+            }
+          });
+          questionRangeMaxElement.addEventListener("change", event => {
+            let value = questionRangeMaxElement.value;
+            value = value.replaceAll("０", "0");
+            value = value.replaceAll("１", "1");
+            value = value.replaceAll("２", "2");
+            value = value.replaceAll("３", "3");
+            value = value.replaceAll("４", "4");
+            value = value.replaceAll("５", "5");
+            value = value.replaceAll("６", "6");
+            value = value.replaceAll("７", "7");
+            value = value.replaceAll("８", "8");
+            value = value.replaceAll("９", "9");
+            questionRangeMaxElement.value = value;
+            if (value !== "") {
+              questionSelect[questionName].range = true;
+              questionSelect[questionName].range_max = parseInt(value);
+            } else {
+              questionSelect[questionName].range_max = Infinity;
+            }
+          });
+        }
+      }
+
 
           
       correctElement.style.display = "none";
@@ -1071,6 +1276,7 @@
       });
       if (localData) {
         nextQuestionButton.addEventListener('click', main_event);
+        setQuestionSelect();
         requestGetData(data => {
           questionData  = data.questions;
           sameChars  = data.sameChars;
@@ -1085,6 +1291,7 @@
           sameChars  = data.sameChars;
           notNextChars  = data.notNextChars;
           nextQuestionButton.addEventListener('click', main_event);
+          setQuestionSelect();
           questionElement.textContent = "";
           startElement.disabled = false;
           nextQuestionButton.disabled = false;
@@ -1126,7 +1333,7 @@
           })  // 記録を送信
         }
 
-        document.getElementById("makingQuestionLink").style.display = "";
+        settingButton.style.display = "";
 
         if (document.fullscreenElement) document.exitFullscreen();
       });
@@ -1140,7 +1347,7 @@
         document.body.style.userSelect = "";
         document.body.style.webkitUserSelect = "";
         
-        document.getElementById("makingQuestionLink").style.display = "none";
+        settingButton.style.display = "none";
 
         document.documentElement.requestFullscreen();
       });
@@ -1148,6 +1355,13 @@
       answerInputElement.addEventListener('click', event => {
         event.stopPropagation();
         stopElement.dispatchEvent(new Event('click'));
+      });
+
+      settingButton.addEventListener("click", event => {
+        settingDialog.showModal();
+      });
+      settingCloseButton.addEventListener("click", event => {
+        settingDialog.close();
       });
 
       document.documentElement.addEventListener('fullscreenchange', event => {
@@ -1160,6 +1374,9 @@
       if(!window.matchMedia('(display-mode: standalone)').matches){
         document.getElementById("makingQuestionLink").target = "_brank";
       }
+
+
+
 
 
 
