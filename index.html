@@ -554,6 +554,7 @@
       let nowQuestionIndex;  // 現在の問題のインデックス
       let lastQuestionIndex = [];  // 前回の問題のインデックス
       let record = [];  // 正答数、出題数の記録
+      let recordLength = 0;  // 記録の数
       let record_session = [];  // 現在のセッションにおける正答数、出題数、前回出されてからの他の問題の出題数の記録
       let is_review = false;  // 間違えた問題の再出題かどうか
       /**
@@ -839,6 +840,7 @@
           if (!record[questionIndex]) record[questionIndex] = [0, 0];
           record[questionIndex][1] += 1;
           if (correct) record[questionIndex][0] += 1;
+          recordLength++;
         }
 
         if (is_review || !correct) {
@@ -860,6 +862,7 @@
 
         localStorage.setItem("record_session", JSON.stringify(record_session));
         localStorage.setItem("record", JSON.stringify(record));
+        console.log(recordLength);
       }
 
       function getRandomAnswerButtonIndex() {
@@ -961,13 +964,6 @@
         if (answerIndex != 0) {
           // 不正解
           onIncorrect();
-
-          if (!is_loading && record.length >= 1) {
-            requestSetRecord(record, data => {
-              record = [];
-              questionData = data;
-            });  // 記録を送信
-          }
         } else if (inputAnswerCount >= answerChoise.length) {
           // 正解
           onCorrect();
@@ -1069,6 +1065,15 @@
             }
           }, 50);
         }, 2000);
+
+        if (!is_loading && recordLength >= 13) {
+          requestSetRecord(record, data => {
+            record = [];
+            recordLength = 0;
+            questionData = data;
+            setQuestionSelect();
+          });
+        }
       }
       function onIncorrect() {
         inputtingAnswer = false;
@@ -1125,6 +1130,15 @@
             }
           }, 50);
         }, 2000);
+
+        if (!is_loading && recordLength >= 7) {
+          requestSetRecord(record, data => {
+            record = [];
+            recordLength = 0;
+            questionData = data;
+            setQuestionSelect();
+          });
+        }
       }
 
       function setQuestionSelect() {
@@ -1154,7 +1168,7 @@
         questionNames.sort(collator.compare);
 
         while (questionSelectElement.firstChild) {
-          questionLabelElement.removeChild(questionSelectElement.firstChild);
+          questionSelectElement.removeChild(questionSelectElement.firstChild);
         }
         for (let i = 0; i < questionNames.length; i++) {
           const questionName = questionNames[i];
@@ -1166,7 +1180,7 @@
           const questionSelectInput = document.createElement("input");
           questionSelectLabel.appendChild(questionSelectInput);
           questionSelectInput.type = "checkbox";
-          questionSelectInput.checked = true;
+          questionSelectInput.checked = questionSelect[questionName].is_question;
           questionSelectLabel.appendChild(document.createTextNode(questionName));
           const questionRangeMinElement = document.createElement("input");
           questionSelectContainer.appendChild(questionRangeMinElement);
@@ -1175,6 +1189,9 @@
           questionRangeMinElement.min = questionLabel.min;
           questionRangeMinElement.max = questionLabel.max;
           questionRangeMinElement.style.width = "3rem";
+          if (questionSelect[questionName].range_min != -Infinity) {
+            questionRangeMinElement.value = questionSelect[questionName].range_min;
+          }
           questionSelectContainer.appendChild(document.createTextNode("～"));
           const questionRangeMaxElement = document.createElement("input");
           questionSelectContainer.appendChild(questionRangeMaxElement);
@@ -1183,6 +1200,9 @@
           questionRangeMaxElement.min = questionLabel.min;
           questionRangeMaxElement.max = questionLabel.max;
           questionRangeMaxElement.style.width = "3rem";
+          if (questionSelect[questionName].range_max != Infinity) {
+            questionRangeMaxElement.value = questionSelect[questionName].range_max;
+          }
 
           questionSelectInput.addEventListener("change", event => {
             questionSelect[questionName].is_question = questionSelectInput.checked;
@@ -1282,6 +1302,7 @@
           sameChars  = data.sameChars;
           notNextChars  = data.notNextChars;
           localStorage.setItem("data", JSON.stringify(data));
+          setQuestionSelect();
         });
       } else {
         startElement.disabled = true;
@@ -1300,15 +1321,6 @@
           questionElement.textContent = "データの読み込みに失敗しました。"
         });
       }
-
-      setInterval(() => {
-        if (!is_loading && record.length >= 1 && is_active && document.visibilityState == "visible") {
-          requestSetRecord(record, data => {
-            record = [];
-            questionData = data;
-          });
-        }
-      }, 60000);
 
       stopElement.style.display = "none";
       stopElement.addEventListener('click', event => {
@@ -1329,7 +1341,9 @@
         if (!is_loading && record.length >= 1) {
           requestSetRecord(record, data => {
             record = [];
+            recordLength = 0;
             questionData = data;
+            setQuestionSelect();
           })  // 記録を送信
         }
 
