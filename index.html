@@ -862,7 +862,6 @@
 
         localStorage.setItem("record_session", JSON.stringify(record_session));
         localStorage.setItem("record", JSON.stringify(record));
-        console.log(recordLength);
       }
 
       function getRandomAnswerButtonIndex() {
@@ -942,7 +941,8 @@
 
           if (inputCountdown <= 0) {
             // 不正解
-            onIncorrect();
+            clearInterval(inputIntervalId);
+            //onIncorrect();
           }
         }, 10)
       }
