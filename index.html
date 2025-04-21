@@ -33,6 +33,7 @@
         font-optical-sizing: auto;
         font-weight: 400;
         font-style: normal;
+        line-height: 1.4;
       }
       body {
         -webkit-user-select: none;
@@ -103,7 +104,7 @@
         color: #e61283;
       }
       #answer2 {
-        font-size: max(1.8vh, 0.7rem);
+        font-size: max(1.6vh, 0.6rem);
       }
 
       #questionLabel {
@@ -328,6 +329,12 @@
         <button id="openSetting">設定</button>
         <dialog id="setting">
           <button id="closeSetting" autofocus>閉じる</button>
+          <div>
+            <label>
+              <input type="checkbox" id="reviewSetting" checked>
+              間違えた問題を再度出題
+            </label>
+          </div>
           <div id="questionSelect"></div>
           <a href="" id="makingQuestionLink">作問</a>
         </dialog>
@@ -543,6 +550,8 @@
       const settingDialog = document.getElementById("setting");  // 設定のダイアログ
       /** @type {HTMLButtonElement} */
       const settingCloseButton = document.getElementById("closeSetting");  // 設定非表示ボタン
+      /** @type {HTMLInputElement} */
+      const reviewSettingCheckbox = document.getElementById("reviewSetting");  // 復習設定
       /** @type {HTMLDivElement} */
       const questionSelectElement = document.getElementById("questionSelect");  // 問題選択要素
       let nowQuestion;  // 現在の問題（配列）
@@ -573,7 +582,7 @@
       function main() {
 
         function getQuestionIndex() {
-          if (!is_review) {  // 前回の問題が復習でなかったとき
+          if (!is_review && reviewSettingCheckbox.checked) {  // 前回の問題が復習でなかったとき
             const indexArray = [];
             for (let i = 0; i < record_session.length; i++) {
               if (!record_session[i]) continue;
