@@ -338,7 +338,7 @@
           </div>
           <div>
             <label>
-              <input type="checkbox" id="useFullscreen">
+              <input type="checkbox" id="useFullscreen" checked>
               全画面表示を使用
             </label>
           </div>
@@ -790,77 +790,79 @@
 
 
 
-        // 初期値へ
-        //questionElement.innerHTML = "";
-        questionReadElement.textContent = "";
-        questionNotReadElement.textContent = "";
-        answer1Element.textContent = "";
-        answer2Element.textContent = "";
-        questionLabelElement.textContent = "";
-        nowShowWordCount = 0;
-        questionTextNodes = [];
-        countdown = 900;
-        countdownElement.value = "900";
-        countdownLabelElement.textContent = "9.00";
-        inputCountdown = 500;
-        inputCountdownElement.textContent = "5";
-        inputCountdownElement.style.color = "green";
-        nowQuestionIndex = getQuestionIndex();
-        nowQuestion = questionData[nowQuestionIndex];
-        inputAnswer = "";
-        inputAnswerCount = 0;
-        answerChoise = getChoice(nowQuestion);
-        answerInputElement.style.display = "none";
-        answerInputShowElement.textContent = "";
-        answerButton.style.display = "";
-        nextQuestionButton.style.display = "none";
+        requestAnimationFrame(() => {
+          // 初期値へ
+          //questionElement.innerHTML = "";
+          questionReadElement.textContent = "";
+          questionNotReadElement.textContent = "";
+          answer1Element.textContent = "";
+          answer2Element.textContent = "";
+          questionLabelElement.textContent = "";
+          nowShowWordCount = 0;
+          questionTextNodes = [];
+          countdown = 900;
+          countdownElement.value = "900";
+          countdownLabelElement.textContent = "9.00";
+          inputCountdown = 500;
+          inputCountdownElement.textContent = "5";
+          inputCountdownElement.style.color = "green";
+          nowQuestionIndex = getQuestionIndex();
+          nowQuestion = questionData[nowQuestionIndex];
+          inputAnswer = "";
+          inputAnswerCount = 0;
+          answerChoise = getChoice(nowQuestion);
+          answerInputElement.style.display = "none";
+          answerInputShowElement.textContent = "";
+          answerButton.style.display = "";
+          nextQuestionButton.style.display = "none";
 
-        lastQuestionIndex.push(nowQuestionIndex);
-        if (lastQuestionIndex.length > 20) lastQuestionIndex.shift();
+          lastQuestionIndex.push(nowQuestionIndex);
+          if (lastQuestionIndex.length > 20) lastQuestionIndex.shift();
 
-        document.getElementById("makingQuestionLink").href = url + "?page=makingQuestion&questionIndex=" + questionData[nowQuestionIndex][8];
+          document.getElementById("makingQuestionLink").href = url + "?page=makingQuestion&questionIndex=" + questionData[nowQuestionIndex][8];
 
-        answerButton.disabled = true;
-        setTimeout(() => answerButton.disabled = false, 1000);
+          answerButton.disabled = true;
+          setTimeout(() => answerButton.disabled = false, 1000);
 
-        
-        for (let i = 0; i < nowQuestion[0].length; i++) {
-          questionTextNodes[i] = document.createTextNode(nowQuestion[0][i]);
-          questionNotReadElement.appendChild(questionTextNodes[i]);
-        }
-
-        let requestID = 0;
-        intervalId = setInterval(() => {
-          if (continueProcess && document.visibilityState == "visible") {
-            if (nowShowWordCount < nowQuestion[0].length) {
-              //const text = nowQuestion[0].slice(0, ++nowShowWordCount);
-              //requestAnimationFrame(() => questionElement.textContent = text);
-              requestAnimationFrame(() => questionReadElement.appendChild(questionTextNodes[nowShowWordCount++]));
-            } else {
-              clearInterval(intervalId);  // 問題の表示終了
-
-              intervalId = setInterval(() => {
-                if (continueProcess && document.visibilityState == "visible") {
-                  countdown--;
-                  if (countdown >= 0) {
-                    requestID = requestAnimationFrame(() => {
-                      cancelAnimationFrame(requestID);
-                      const countdownString = countdown.toString();
-                      countdownElement.value = countdownString;
-                      const countdownLabelString = "0".repeat(3 - countdownString.length) + countdownString;
-                      countdown_label.textContent = countdownLabelString.slice(0, 1) + "." + countdownLabelString.slice(1, 3);
-                    });
-                  } else {
-                    countdown = 0;
-                    // 不正解
-                    clearInterval(intervalId);
-                    //onIncorrect();
-                  }
-                }
-              }, 10);
-            }
+          
+          for (let i = 0; i < nowQuestion[0].length; i++) {
+            questionTextNodes[i] = document.createTextNode(nowQuestion[0][i]);
+            questionNotReadElement.appendChild(questionTextNodes[i]);
           }
-        }, 170);
+
+          let requestID = 0;
+          intervalId = setInterval(() => {
+            if (continueProcess && document.visibilityState == "visible") {
+              if (nowShowWordCount < nowQuestion[0].length) {
+                //const text = nowQuestion[0].slice(0, ++nowShowWordCount);
+                //requestAnimationFrame(() => questionElement.textContent = text);
+                requestAnimationFrame(() => questionReadElement.appendChild(questionTextNodes[nowShowWordCount++]));
+              } else {
+                clearInterval(intervalId);  // 問題の表示終了
+
+                intervalId = setInterval(() => {
+                  if (continueProcess && document.visibilityState == "visible") {
+                    countdown--;
+                    if (countdown >= 0) {
+                      requestID = requestAnimationFrame(() => {
+                        cancelAnimationFrame(requestID);
+                        const countdownString = countdown.toString();
+                        countdownElement.value = countdownString;
+                        const countdownLabelString = "0".repeat(3 - countdownString.length) + countdownString;
+                        countdown_label.textContent = countdownLabelString.slice(0, 1) + "." + countdownLabelString.slice(1, 3);
+                      });
+                    } else {
+                      countdown = 0;
+                      // 不正解
+                      clearInterval(intervalId);
+                      //onIncorrect();
+                    }
+                  }
+                }, 10);
+              }
+            }
+          }, 170);
+        });
       }
 
       function main_event(event) {
@@ -929,14 +931,16 @@
       function settingAnswerInputButton() {
         inputtingAnswer = true;
         answerButtonIndex = getRandomAnswerButtonIndex();
-        answerInputButton1.textContent = answerChoise[inputAnswerCount][answerButtonIndex[0]];
-        answerInputButton2.textContent = answerChoise[inputAnswerCount][answerButtonIndex[1]];
-        answerInputButton3.textContent = answerChoise[inputAnswerCount][answerButtonIndex[2]];
-        answerInputButton4.textContent = answerChoise[inputAnswerCount][answerButtonIndex[3]];
-        answerInputButton5.textContent = answerChoise[inputAnswerCount][answerButtonIndex[4]];
-        answerInputButton6.textContent = answerChoise[inputAnswerCount][answerButtonIndex[5]];
-        answerInputButton7.textContent = answerChoise[inputAnswerCount][answerButtonIndex[6]];
-        answerInputButton8.textContent = answerChoise[inputAnswerCount][answerButtonIndex[7]];
+        requestAnimationFrame(() => {
+          answerInputButton1.textContent = answerChoise[inputAnswerCount][answerButtonIndex[0]];
+          answerInputButton2.textContent = answerChoise[inputAnswerCount][answerButtonIndex[1]];
+          answerInputButton3.textContent = answerChoise[inputAnswerCount][answerButtonIndex[2]];
+          answerInputButton4.textContent = answerChoise[inputAnswerCount][answerButtonIndex[3]];
+          answerInputButton5.textContent = answerChoise[inputAnswerCount][answerButtonIndex[4]];
+          answerInputButton6.textContent = answerChoise[inputAnswerCount][answerButtonIndex[5]];
+          answerInputButton7.textContent = answerChoise[inputAnswerCount][answerButtonIndex[6]];
+          answerInputButton8.textContent = answerChoise[inputAnswerCount][answerButtonIndex[7]];
+        });
 
         answerInputButton1.disabled = true;
         answerInputButton2.disabled = true;
@@ -1429,7 +1433,6 @@
 
       if(!window.matchMedia('(display-mode: standalone)').matches){
         document.getElementById("makingQuestionLink").target = "_brank";
-        document.getElementById("useFullscreen").checked = true;
       }
 
 
