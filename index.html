@@ -34,6 +34,7 @@
         font-weight: 400;
         font-style: normal;
         line-height: 1.4;
+        accent-color: #0075ff;
       }
       body {
         -webkit-user-select: none;
@@ -335,6 +336,12 @@
               間違えた問題を再度出題
             </label>
           </div>
+          <div>
+            <label>
+              <input type="checkbox" id="useFullscreen">
+              全画面表示を使用
+            </label>
+          </div>
           <div id="questionSelect"></div>
           <a href="" id="makingQuestionLink">作問</a>
         </dialog>
@@ -582,24 +589,24 @@
       function main() {
 
         function getQuestionIndex() {
-          if (!is_review && reviewSettingCheckbox.checked) {  // 前回の問題が復習でなかったとき
-            const indexArray = [];
-            for (let i = 0; i < record_session.length; i++) {
-              if (!record_session[i]) continue;
-              const index = i;
+          const indexArray = [];
+          for (let i = 0; i < record_session.length; i++) {
+            if (!record_session[i]) continue;
+            const index = i;
 
-              const questionLabel = questionData[index][5].split(" #");
-              const questionName = questionLabel[0];
-              const questionNumber = parseInt(questionLabel[1]);
-              if (!questionSelect[questionName].is_question) continue;
-              if (questionSelect[questionName].range) {
-                if (questionNumber < questionSelect[questionName].range_min || questionSelect[questionName].range_max < questionNumber) {
-                  continue;
-                }
+            const questionLabel = questionData[index][5].split(" #");
+            const questionName = questionLabel[0];
+            const questionNumber = parseInt(questionLabel[1]);
+            if (!questionSelect[questionName].is_question) continue;
+            if (questionSelect[questionName].range) {
+              if (questionNumber < questionSelect[questionName].range_min || questionSelect[questionName].range_max < questionNumber) {
+                continue;
               }
-
-              indexArray.push(index);
             }
+
+            indexArray.push(index);
+          }
+          if ((indexArray.length > 10 || !is_review/* 前回の問題が復習でなかったとき */) && reviewSettingCheckbox.checked) {
             while (indexArray.length > 0) {
               const arrayIndex = Math.floor(Math.random() * indexArray.length);
               const index = indexArray[arrayIndex];
@@ -1396,7 +1403,7 @@
         
         settingButton.style.display = "none";
 
-        document.documentElement.requestFullscreen();
+        if (document.getElementById("useFullscreen").checked) document.documentElement.requestFullscreen();
       });
       document.getElementById("answer_input_space").addEventListener('click', event => event.stopPropagation());
       answerInputElement.addEventListener('click', event => {
