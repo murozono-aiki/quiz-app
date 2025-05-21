@@ -589,39 +589,41 @@
       function main() {
 
         function getQuestionIndex() {
-          const indexArray = [];
-          for (let i = 0; i < record_session.length; i++) {
-            if (!record_session[i]) continue;
-            const index = i;
+          if (reviewSettingCheckbox.checked) {
+            const indexArray = [];
+            for (let i = 0; i < record_session.length; i++) {
+              if (!record_session[i]) continue;
+              const index = i;
 
-            const questionLabel = questionData[index][5].split(" #");
-            const questionName = questionLabel[0];
-            const questionNumber = parseInt(questionLabel[1]);
-            if (!questionSelect[questionName].is_question) continue;
-            if (questionSelect[questionName].range) {
-              if (questionNumber < questionSelect[questionName].range_min || questionSelect[questionName].range_max < questionNumber) {
-                continue;
-              }
-            }
-
-            indexArray.push(index);
-          }
-          if ((indexArray.length > 10 || !is_review/* 前回の問題が復習でなかったとき */) && reviewSettingCheckbox.checked) {
-            while (indexArray.length > 0) {
-              const arrayIndex = Math.floor(Math.random() * indexArray.length);
-              const index = indexArray[arrayIndex];
-
-              const rate_session = record_session[index][0] / record_session[index][1];
-              if (rate_session <= 0.5 || record_session[index][1] < 5) {
-                if (record_session[index][2] >=  (rate_session * 8) + 4) {
-                  is_review = true;
-                  return index;
+              const questionLabel = questionData[index][5].split(" #");
+              const questionName = questionLabel[0];
+              const questionNumber = parseInt(questionLabel[1]);
+              if (!questionSelect[questionName].is_question) continue;
+              if (questionSelect[questionName].range) {
+                if (questionNumber < questionSelect[questionName].range_min || questionSelect[questionName].range_max < questionNumber) {
+                  continue;
                 }
-              } else {
-                record_session[index] = undefined;
               }
 
-              indexArray.splice(arrayIndex, 1);
+              indexArray.push(index);
+            }
+            if (indexArray.length > 10 || !is_review/* 前回の問題が復習でなかったとき */) {
+              while (indexArray.length > 0) {
+                const arrayIndex = Math.floor(Math.random() * indexArray.length);
+                const index = indexArray[arrayIndex];
+
+                const rate_session = record_session[index][0] / record_session[index][1];
+                if (rate_session <= 0.5 || record_session[index][1] < 5) {
+                  if (record_session[index][2] >=  (rate_session * 8) + 4) {
+                    is_review = true;
+                    return index;
+                  }
+                } else {
+                  record_session[index] = undefined;
+                }
+
+                indexArray.splice(arrayIndex, 1);
+              }
             }
           }
 
@@ -1427,6 +1429,7 @@
 
       if(!window.matchMedia('(display-mode: standalone)').matches){
         document.getElementById("makingQuestionLink").target = "_brank";
+        document.getElementById("useFullscreen").checked = true;
       }
 
 
