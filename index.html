@@ -1095,13 +1095,15 @@
               clearInterval(intervalId);  // 問題の表示終了
 
               setTimeout(() => {
-                answer1Element.textContent = nowQuestion[1];
-                answer2Element.textContent = nowQuestion[2];
-                questionLabelElement.textContent = nowQuestion[5];
+                requestAnimationFrame(() => {
+                  answer1Element.textContent = nowQuestion[1];
+                  answer2Element.textContent = nowQuestion[2];
+                  questionLabelElement.textContent = nowQuestion[5];
 
-                answerButton.style.display = "none";
-                nextQuestionButton.style.display = "";
-                nextQuestionButton.addEventListener('click', main_event);
+                  answerButton.style.display = "none";
+                  nextQuestionButton.style.display = "";
+                  nextQuestionButton.addEventListener('click', main_event);
+                });
               }, 300);
             }
           }, 20/*50*/);
@@ -1161,13 +1163,15 @@
               clearInterval(intervalId);  // 問題の表示終了
 
               setTimeout(() => {
-                answer1Element.textContent = nowQuestion[1];
-                answer2Element.textContent = nowQuestion[2];
-                questionLabelElement.textContent = nowQuestion[5];
+                requestAnimationFrame(() => {
+                  answer1Element.textContent = nowQuestion[1];
+                  answer2Element.textContent = nowQuestion[2];
+                  questionLabelElement.textContent = nowQuestion[5];
 
-                answerButton.style.display = "none";
-                nextQuestionButton.style.display = "";
-                nextQuestionButton.addEventListener('click', main_event);
+                  answerButton.style.display = "none";
+                  nextQuestionButton.style.display = "";
+                  nextQuestionButton.addEventListener('click', main_event);
+                });
               }, 300);
             }
           }, 20/*50*/);
