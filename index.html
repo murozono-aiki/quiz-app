@@ -613,7 +613,7 @@
                 const index = indexArray[arrayIndex];
 
                 const rate_session = record_session[index][0] / record_session[index][1];
-                if (rate_session <= 0.5 || record_session[index][1] < 5) {
+                if ((rate_session <= 0.5 || record_session[index][1] < 5) && record_session[index][1] < 20) {
                   if (record_session[index][2] >=  (rate_session * 8) + 4) {
                     is_review = true;
                     return index;
@@ -1323,12 +1323,14 @@
         let lastQuestion_before = localStorage.getItem("last_question");
         if (lastQuestion_before) {
           lastQuestion_before = parseInt(lastQuestion_before);
-          //questionElement.textContent = questionData[lastQuestion_before][0];
-          questionReadElement.textContent = questionData[lastQuestion_before][0];
-          document.getElementById("makingQuestionLink").href = url + "?page=makingQuestion&questionIndex=" + questionData[lastQuestion_before][8];
-          answer1Element.textContent = questionData[lastQuestion_before][1];
-          answer2Element.textContent = questionData[lastQuestion_before][2];
-          questionLabelElement.textContent = questionData[lastQuestion_before][5];
+          requestAnimationFrame(() => {
+            //questionElement.textContent = questionData[lastQuestion_before][0];
+            questionReadElement.textContent = questionData[lastQuestion_before][0];
+            document.getElementById("makingQuestionLink").href = url + "?page=makingQuestion&questionIndex=" + questionData[lastQuestion_before][8];
+            answer1Element.textContent = questionData[lastQuestion_before][1];
+            answer2Element.textContent = questionData[lastQuestion_before][2];
+            questionLabelElement.textContent = questionData[lastQuestion_before][5];
+          });
         }
       } catch (error) {
         console.error(error);
