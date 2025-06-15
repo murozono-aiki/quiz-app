@@ -170,6 +170,7 @@
         border-radius: 10px;
         margin-left: auto;
         max-width: 33rem;
+        display: grid;
       }
       #answer_input {
         height: 20vh;
@@ -190,7 +191,7 @@
         vertical-align: middle;
         white-space: pre-wrap;
       }
-      #button1, #button2, #button3, #button4, #button5, #button6, #button7, #button8 {
+      .answer_input_buttons button {
         box-sizing: border-box;
         width: 20%;
         margin: 1.5%;
@@ -318,6 +319,18 @@
       }
       #makingQuestionLink:hover {
         box-shadow: lightgray 0 0 7px;
+      }
+
+      @media (hover: hover) {
+        .answer_input_buttons button:hover {
+          background-color: ghostwhite;
+        }
+      }
+
+      @media (orientation: landscape) {
+        #answer_input {
+          order: 1;
+        }
       }
     </style>
   </head>
