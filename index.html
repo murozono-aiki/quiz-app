@@ -169,7 +169,7 @@
         text-align: center;
         border-radius: 10px;
         margin-left: auto;
-        max-width: 33rem;
+        max-width: 25rem/*33rem*/;
         display: grid;
       }
       #answer_input {
@@ -327,9 +327,20 @@
         }
       }
 
+      @media screen and (min-width: calc(25rem + 20px + 40px)) {
+        .answer_input_buttons button {
+          max-height: 10vh;
+          font-size: min(6vw, 5vh);
+        }
+      }
+
       @media (orientation: landscape) {
         #answer_input {
           order: 1;
+        }
+
+        #answer_input_space {
+          bottom: 20px;
         }
       }
     </style>
