@@ -1105,7 +1105,11 @@
             if (nowShowWordCount < nowQuestion[0].length) {
               //const text = nowQuestion[0].slice(0, ++nowShowWordCount);
               //questionElement.textContent = text;
-              requestAnimationFrame(() => questionReadElement.appendChild(questionTextNodes[nowShowWordCount++]));
+              requestAnimationFrame(() => {
+                questionReadElement.appendChild(questionTextNodes[nowShowWordCount++]);
+                if (questionTextNodes[nowShowWordCount + 1]) questionReadElement.appendChild(questionTextNodes[nowShowWordCount++]);
+                if (questionTextNodes[nowShowWordCount + 1]) questionReadElement.appendChild(questionTextNodes[nowShowWordCount++]);
+              });
             } else {
               clearInterval(intervalId);  // 問題の表示終了
 
@@ -1124,7 +1128,7 @@
           }, 20/*50*/);
         }, 2000);
 
-        if (!is_loading && recordLength >= 13) {
+        if (!is_loading && recordLength >= 7) {
           requestSetRecord(record, data => {
             record = [];
             recordLength = 0;
@@ -1173,7 +1177,11 @@
             if (nowShowWordCount < nowQuestion[0].length) {
               //const text = nowQuestion[0].slice(0, ++nowShowWordCount);
               //questionElement.textContent = text;
-              requestAnimationFrame(() => questionReadElement.appendChild(questionTextNodes[nowShowWordCount++]));
+              requestAnimationFrame(() => {
+                questionReadElement.appendChild(questionTextNodes[nowShowWordCount++]);
+                if (questionTextNodes[nowShowWordCount + 1]) questionReadElement.appendChild(questionTextNodes[nowShowWordCount++]);
+                if (questionTextNodes[nowShowWordCount + 1]) questionReadElement.appendChild(questionTextNodes[nowShowWordCount++]);
+              });
             } else {
               clearInterval(intervalId);  // 問題の表示終了
 
@@ -1192,7 +1200,7 @@
           }, 20/*50*/);
         }, 2000);
 
-        if (!is_loading && recordLength >= 7) {
+        if (!is_loading && recordLength >= 4) {
           requestSetRecord(record, data => {
             record = [];
             recordLength = 0;
@@ -1384,8 +1392,8 @@
           nextQuestionButton.disabled = false;
           localStorage.setItem("data", JSON.stringify(data));
         }, () => {
-          //questionElement.textContent = "データの読み込みに失敗しました。"
-          questionElement.textContent = "データの読み込みに失敗しました。"
+          //questionElement.textContent = "データの読み込みに失敗しました。";
+          questionElement.textContent = "データの読み込みに失敗しました。";
         });
       }
 
@@ -1433,10 +1441,10 @@
         if (document.getElementById("useFullscreen").checked) document.documentElement.requestFullscreen();
       });
       document.getElementById("answer_input_space").addEventListener('click', event => event.stopPropagation());
-      answerInputElement.addEventListener('click', event => {
+      /*answerInputElement.addEventListener('click', event => {
         event.stopPropagation();
         stopElement.dispatchEvent(new Event('click'));
-      });
+      });*/
 
       settingButton.addEventListener("click", event => {
         settingDialog.showModal();
