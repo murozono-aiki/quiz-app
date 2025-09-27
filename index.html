@@ -1465,21 +1465,24 @@
 
       document.getElementById("useSmartphoneMode").addEventListener('change', event => {
         if (document.getElementById("useSmartphoneMode").checked) {
-          document.getElementById("answer_input_space").style.maxWidth = "5.5cm";
+          document.getElementById("answer_input_space").style.maxWidth = "6cm";
+          document.getElementById("answer_input").style.fontSize = "15px";
           document.querySelectorAll(".answer_input_buttons button").forEach(element => {
-            element.style.fontSize = "25px";
+            element.style.fontSize = "27px";
           });
         } else {
           document.getElementById("answer_input_space").style.maxWidth = "";
+          document.getElementById("answer_input").style.fontSize = "";
           document.querySelectorAll(".answer_input_buttons button").forEach(element => {
             element.style.fontSize = "";
           });
         }
       });
-      if (window.matchMedia && window.matchMedia("(any-hover: none)").matches) {
+      document.getElementById("useSmartphoneMode").checked = false;
+      /*if (window.matchMedia && window.matchMedia("(any-hover: none)").matches) {
         document.getElementById("useSmartphoneMode").checked = true;
         document.getElementById("useSmartphoneMode").dispatchEvent(new Event('change'));
-      }
+      }*/
 
       settingButton.addEventListener("click", event => {
         settingDialog.showModal();
