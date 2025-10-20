@@ -80,7 +80,7 @@
         margin-top: 0.3rem;
         margin-bottom: 0.3rem;
         white-space: pre-wrap;
-        font-size: max(3vh, 1.15rem);
+        font-size: max(2.5vh, 1.15rem);
       }
       #question_not_read {
         color: #949494;
@@ -101,13 +101,13 @@
         padding: 0 max(30px, 5%);
         padding-left: calc(max(30px, 5%) + 1rem);
         white-space: pre-wrap;
-        font-size: max(3vh, 1.15rem);
+        font-size: max(2.5vh, 1.15rem);
       }
       #answer1 {
         color: #e61283;
       }
       #answer2 {
-        font-size: max(1.6vh, 0.6rem);
+        font-size: max(1.3vh, 0.6rem);
       }
 
       #questionLabel {
@@ -372,6 +372,12 @@
             <label>
               <input type="checkbox" id="useSmartphoneMode">
               入力欄を小型化
+            </label>
+          </div>
+          <div>
+            <label>
+              <input type="checkbox" id="leftAnswerInput">
+              入力欄を左寄せ
             </label>
           </div>
           <div id="questionSelect"></div>
@@ -1478,11 +1484,23 @@
           });
         }
       });
-      document.getElementById("useSmartphoneMode").checked = false;
+      //document.getElementById("useSmartphoneMode").checked = false;
+      document.getElementById("useSmartphoneMode").dispatchEvent(new Event('change'));
       /*if (window.matchMedia && window.matchMedia("(any-hover: none)").matches) {
         document.getElementById("useSmartphoneMode").checked = true;
         document.getElementById("useSmartphoneMode").dispatchEvent(new Event('change'));
       }*/
+
+      document.getElementById("leftAnswerInput").addEventListener('change', event => {
+        if (document.getElementById("leftAnswerInput").checked) {
+          document.getElementById("answer_input_space").style.marginLeft = "0";
+          document.getElementById("answer_input_space").style.marginRight = "auto";
+        } else {
+          document.getElementById("answer_input_space").style.marginLeft = "auto";
+          document.getElementById("answer_input_space").style.marginRight = "0";
+        }
+      });
+      document.getElementById("leftAnswerInput").dispatchEvent(new Event('change'));
 
       settingButton.addEventListener("click", event => {
         settingDialog.showModal();
