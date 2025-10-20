@@ -374,6 +374,12 @@
               入力欄を小型化
             </label>
           </div>
+          <div>
+            <label>
+              <input type="checkbox" id="leftAnswerInput">
+              入力欄を左寄せ
+            </label>
+          </div>
           <div id="questionSelect"></div>
           <a href="" id="makingQuestionLink">作問</a>
         </dialog>
@@ -1478,11 +1484,23 @@
           });
         }
       });
-      document.getElementById("useSmartphoneMode").checked = false;
+      //document.getElementById("useSmartphoneMode").checked = false;
+      document.getElementById("useSmartphoneMode").dispatchEvent(new Event('change'));
       /*if (window.matchMedia && window.matchMedia("(any-hover: none)").matches) {
         document.getElementById("useSmartphoneMode").checked = true;
         document.getElementById("useSmartphoneMode").dispatchEvent(new Event('change'));
       }*/
+
+      document.getElementById("leftAnswerInput").addEventListener('change', event => {
+        if (document.getElementById("leftAnswerInput").checked) {
+          document.getElementById("answer_input_space").style.marginLeft = "0";
+          document.getElementById("answer_input_space").style.marginRight = "auto";
+        } else {
+          document.getElementById("answer_input_space").style.marginLeft = "auto";
+          document.getElementById("answer_input_space").style.marginRight = "0";
+        }
+      });
+      document.getElementById("leftAnswerInput").dispatchEvent(new Event('change'));
 
       settingButton.addEventListener("click", event => {
         settingDialog.showModal();
