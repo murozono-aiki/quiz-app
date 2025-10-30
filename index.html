@@ -56,6 +56,7 @@
       dialog {
         border-radius: 7px;
         min-width: 40vw;
+        max-height: calc(90vh - 20px);
       }
       .form-submit {
         text-align: right;
@@ -1513,6 +1514,12 @@
         if (!document.fullscreenElement) {
           const buttonEvent = new Event('click');
           stopElement.dispatchEvent(buttonEvent);
+        }
+      });
+
+      document.addEventListener("visibilitychange", event => {
+        if (document.visibilityState === "visible") {
+          document.getElementById("useSmartphoneMode").dispatchEvent(new Event('change'));
         }
       });
 
