@@ -854,6 +854,7 @@
           answerInputShowElement.textContent = "";
           answerButton.style.display = "";
           nextQuestionButton.style.display = "none";
+          document.getElementById("useSmartphoneMode").dispatchEvent(new Event('change'));
 
           lastQuestionIndex.push(nowQuestionIndex);
           if (lastQuestionIndex.length > 20) lastQuestionIndex.shift();
@@ -1224,7 +1225,7 @@
           }, 20/*50*/);
         }, 2000);
 
-        if (!is_loading && recordLength >= 4) {
+        if (!is_loading && recordLength >= 1) {
           requestSetRecord(record, data => {
             record = [];
             recordLength = 0;
@@ -1463,6 +1464,8 @@
         settingButton.style.display = "none";
 
         if (document.getElementById("useFullscreen").checked) document.documentElement.requestFullscreen();
+
+        document.getElementById("useSmartphoneMode").dispatchEvent(new Event('change'));
       });
       document.getElementById("answer_input_space").addEventListener('click', event => event.stopPropagation());
       /*answerInputElement.addEventListener('click', event => {
@@ -1518,8 +1521,15 @@
       });
 
       document.addEventListener("visibilitychange", event => {
-        if (document.visibilityState === "visible") {
-          document.getElementById("useSmartphoneMode").dispatchEvent(new Event('change'));
+        if (document.visibilityState === "hidden") {
+          if (!is_loading && recordLength >= 1) {
+            requestSetRecord(record, data => {
+              record = [];
+              recordLength = 0;
+              questionData = data;
+              setQuestionSelect();
+            });
+          }
         }
       });
 
