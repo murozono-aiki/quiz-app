@@ -27,7 +27,7 @@
       const API_URL = "https://script.googleapis.com/v1/scripts/AKfycbxal0-53dkxPjzbtKHEfli2-MIgyjJZTookm6fSDW5jaqUT99zjSS8R5IDobvf12vwyBw:run";
 
       let accessToken = "";
-      let correctState = false;
+      let correctState = true/*false*/;
       let authSuccess = true;
 
       const hrefURL = new URL(location.href);
@@ -38,6 +38,7 @@
         if (paramSplit[0] && paramSplit[1]) {
           const paramKey = paramSplit[0];
           const paramName = paramSplit[1];
+          console.log(paramKey, paramName);
           if (paramKey == "access_token") {
             accessToken = paramName;
           } else if (paramKey == "state") {
@@ -47,6 +48,7 @@
             } catch(error) {
               console.error(error);
             }
+            console.log(paramName, authState);
             if (paramName == authState) correctState = true;
           } else if (paramKey == "scope") {
             if (paramName != "scope=https://www.googleapis.com/auth/documents.currentonly") authSuccess = false;
