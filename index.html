@@ -17,14 +17,14 @@
     <meta name="google-signin-client_id" content="686329872435-t8vnffd6h1q8i45i1e2eu9fel3h5nndc.apps.googleusercontent.com"-->
 
     <script>
-      /*let url = "";
-      try {
+      let url = "";
+      /*try {
         url = localStorage.getItem("quiz-app-URL");
       } catch(error) {
         console.error(error);
       }*/
-      const url = "https://script.google.com/macros/s/AKfycbxt6H7saDD4cD68IO-eYayjLcrJZMDNvQ-B8digshDX-K0oisBuXVnoRz2rGNeE3Cl_dQ/exec";
-      const URL = "https://script.googleapis.com/v1/scripts/AKfycbxal0-53dkxPjzbtKHEfli2-MIgyjJZTookm6fSDW5jaqUT99zjSS8R5IDobvf12vwyBw:run";
+      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxt6H7saDD4cD68IO-eYayjLcrJZMDNvQ-B8digshDX-K0oisBuXVnoRz2rGNeE3Cl_dQ/exec";
+      const API_URL = "https://script.googleapis.com/v1/scripts/AKfycbxal0-53dkxPjzbtKHEfli2-MIgyjJZTookm6fSDW5jaqUT99zjSS8R5IDobvf12vwyBw:run";
 
       let accessToken = "";
       let correctState = false;
@@ -904,7 +904,7 @@
           lastQuestionIndex.push(nowQuestionIndex);
           if (lastQuestionIndex.length > 20) lastQuestionIndex.shift();
 
-          document.getElementById("makingQuestionLink").href = url + "?page=makingQuestion&questionIndex=" + questionData[nowQuestionIndex][8];
+          document.getElementById("makingQuestionLink").href = WEB_APP_URL + "?page=makingQuestion&questionIndex=" + questionData[nowQuestionIndex][8];
 
           answerButton.disabled = true;
           setTimeout(() => answerButton.disabled = false, 1000);
@@ -1419,7 +1419,7 @@
           requestAnimationFrame(() => {
             //questionElement.textContent = questionData[lastQuestion_before][0];
             questionReadElement.textContent = questionData[lastQuestion_before][0];
-            document.getElementById("makingQuestionLink").href = url + "?page=makingQuestion&questionIndex=" + questionData[lastQuestion_before][8];
+            document.getElementById("makingQuestionLink").href = WEB_APP_URL + "?page=makingQuestion&questionIndex=" + questionData[lastQuestion_before][8];
             answer1Element.textContent = questionData[lastQuestion_before][1];
             answer2Element.textContent = questionData[lastQuestion_before][2];
             questionLabelElement.textContent = questionData[lastQuestion_before][5];
@@ -1589,8 +1589,8 @@
 
 
       async function request(successHandler, failureHandler, method = "GET", body = undefined, parameters = "") {
-        if (url && URL.canParse(url)) {
-          const urlWithParameters = url + parameters;
+        if (WEB_APP_URL && URL.canParse(WEB_APP_URL)) {
+          const urlWithParameters = WEB_APP_URL + parameters;
 
           startLoad();
           const response = await fetch(urlWithParameters, {method: method, body: body});
@@ -1622,7 +1622,7 @@
           'Authorization': "Bearer " + accessToken
         };
         startLoad();
-        const response = await fetch(URL, {method: "POST", body: body, headers: header});
+        const response = await fetch(API_URL, {method: "POST", body: body, headers: header});
         finishLoad();
         if (!response.ok) {
           console.error(`レスポンスステータス: ${response.status}`);
@@ -1637,7 +1637,7 @@
             console.error(json.error);
             if (failureHandler) failureHandler();
           } else if (json.response) {
-            if (successHandler) successHandler(json.response);
+            if (successHandler) successHandler(json.response.result);
           }
         }
       }
@@ -1652,7 +1652,7 @@
           'Authorization': "Bearer " + accessToken
         };
         startLoad();
-        const response = await fetch(URL, {method: "POST", body: body, headers: header});
+        const response = await fetch(API_URL, {method: "POST", body: body, headers: header});
         finishLoad();
         if (!response.ok) {
           console.error(`レスポンスステータス: ${response.status}`);
@@ -1667,7 +1667,7 @@
             console.error(json.error);
             if (failureHandler) failureHandler();
           } else if (json.response) {
-            if (successHandler) successHandler(json.response);
+            if (successHandler) successHandler(json.response.result);
           }
         }
       }
