@@ -11,17 +11,55 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
 
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client; frame-src 'self' https://accounts.google.com/gsi/ https://accounts.google.com; script-src-elem 'self' 'unsafe-inline' https://apis.google.com/ ; connect-src 'self' https://accounts.google.com/gsi/ https://script.google.com/ https://script.googleusercontent.com/;">
+    <!--meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client; frame-src 'self' https://accounts.google.com/gsi/ https://accounts.google.com; script-src-elem 'self' 'unsafe-inline' https://apis.google.com/ https://www.gstatic.com/ ; connect-src 'self' https://accounts.google.com/gsi/ https://script.google.com/ https://script.googleusercontent.com/;">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin same-origin-allow-popups">
     <script src="https://apis.google.com/js/platform.js" async defer></script>
-    <meta name="google-signin-client_id" content="686329872435-t8vnffd6h1q8i45i1e2eu9fel3h5nndc.apps.googleusercontent.com">
+    <meta name="google-signin-client_id" content="686329872435-t8vnffd6h1q8i45i1e2eu9fel3h5nndc.apps.googleusercontent.com"-->
 
     <script>
-      let url = "";
+      /*let url = "";
       try {
         url = localStorage.getItem("quiz-app-URL");
       } catch(error) {
         console.error(error);
+      }*/
+      const URL = "https://script.googleapis.com/v1/scripts/AKfycbxal0-53dkxPjzbtKHEfli2-MIgyjJZTookm6fSDW5jaqUT99zjSS8R5IDobvf12vwyBw:run";
+
+      let accessToken = "";
+      let correctState = false;
+      let authSuccess = true;
+
+      const hrefURL = new URL(location.href);
+      const hrefHash = hrefURL.hash.replace(/^#/, "");
+      const hrefURLParams = hrefHash.split("&");
+      hrefURLParams.forEach(value => {
+        const paramSplit = value.split("=");
+        if (paramSplit[0] && paramSplit[1]) {
+          const paramKey = paramSplit[0];
+          const paramName = paramSplit[1];
+          if (paramKey == "access_token") {
+            accessToken = paramName;
+          } else if (paramKey == "state") {
+            let authState = "";
+            try {
+              authState = localStorage.getItem("quiz-app-auth-state");
+            } catch(error) {
+              console.error(error);
+            }
+            if (paramName == authState) correctState = true;
+          } else if (paramKey == "scope") {
+            if (paramName != "scope=https://www.googleapis.com/auth/documents.currentonly") authSuccess = false;
+          } else if (paramKey == "error") {
+            console.info("error:", paramName);
+            authSuccess = false;
+          }
+        }
+      });
+
+      if (!accessToken || !correctState || !authSuccess) {
+        const state = self.crypto.randomUUID();
+        localStorage.setItem("quiz-app-auth-state", state);
+        window.location = "https://accounts.google.com/o/oauth2/v2/auth?client_id=686329872435-t8vnffd6h1q8i45i1e2eu9fel3h5nndc.apps.googleusercontent.com&redirect_uri=https://murozono-aiki.github.io/quiz-app/&response_type=token&scope=https://www.googleapis.com/auth/documents.currentonly&state=" + state;
       }
     </script>
 
@@ -359,7 +397,7 @@
       </div>
       <div>
         <div id="loading">通信中</div>
-        <div class="g-signin2" data-onsuccess="onSignIn"></div>
+        <!--div class="g-signin2" data-onsuccess="onSignIn"></div-->
         <button id="openSetting">設定</button>
         <dialog id="setting">
           <button id="closeSetting" autofocus>閉じる</button>
@@ -434,7 +472,6 @@
     </div>
 
     <dialog id="firstDialog">
-      <div class="g-signin2" data-onsuccess="onSignIn"></div>
       <p id="firstDialogMessage">
         URLを入力してください。
       </p>
@@ -1574,20 +1611,73 @@
         }
       }
 
-      function requestGetData(successHandler = undefined, failureHandler = undefined) {
-        request(successHandler, failureHandler);
+      async function requestGetData(successHandler = undefined, failureHandler = undefined) {
+        //request(successHandler, failureHandler);
+        const body = {
+          function: "getAllQuestionData"
+        };
+        const header = {
+          'Content-type': "application/json",
+          'Authorization': "Bearer " + accessToken
+        };
+        startLoad();
+        const response = await fetch(URL, {method: "POST", body: body, headers: header});
+        finishLoad();
+        if (!response.ok) {
+          console.error(`レスポンスステータス: ${response.status}`);
+          if (failureHandler) failureHandler();
+        } else {
+          const json = await response.json();
+          console.log(json);
+          if (!json.done) {
+            console.error("Requested script didn't finish.");
+            if (failureHandler) failureHandler();
+          } else if (json.error) {
+            console.error(json.error);
+            if (failureHandler) failureHandler();
+          } else if (json.response) {
+            if (successHandler) successHandler(json.response);
+          }
+        }
       }
-      function requestSetRecord(record, successHandler = undefined, failureHandler = undefined) {
-        request(successHandler, failureHandler, "POST", JSON.stringify({method:"setRecord", parameters:[record]}))
+      async function requestSetRecord(record, successHandler = undefined, failureHandler = undefined) {
+        //request(successHandler, failureHandler, "POST", JSON.stringify({method:"setRecord", parameters:[record]}))
+        const body = {
+          function: "setRecordToSheet",
+          parameters: record
+        };
+        const header = {
+          'Content-type': "application/json",
+          'Authorization': "Bearer " + accessToken
+        };
+        startLoad();
+        const response = await fetch(URL, {method: "POST", body: body, headers: header});
+        finishLoad();
+        if (!response.ok) {
+          console.error(`レスポンスステータス: ${response.status}`);
+          if (failureHandler) failureHandler();
+        } else {
+          const json = await response.json();
+          console.log(json);
+          if (!json.done) {
+            console.error("Requested script didn't finish.");
+            if (failureHandler) failureHandler();
+          } else if (json.error) {
+            console.error(json.error);
+            if (failureHandler) failureHandler();
+          } else if (json.response) {
+            if (successHandler) successHandler(json.response);
+          }
+        }
       }
 
-      function onSignIn() {
+      /*function onSignIn() {
         const profile = googleUser.getBasicProfile();
         console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
         console.log('Name: ' + profile.getName());
         console.log('Image URL: ' + profile.getImageUrl());
         console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-      }
+      }*/
     </script>
     <script src="./script.js"></script>
   </body>
