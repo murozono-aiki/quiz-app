@@ -11,6 +11,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
 
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <meta name="google-signin-client_id" content="686329872435-t8vnffd6h1q8i45i1e2eu9fel3h5nndc.apps.googleusercontent.com">
+
     <script>
       let url = "";
       try {
@@ -354,6 +357,7 @@
       </div>
       <div>
         <div id="loading">通信中</div>
+        <div class="g-signin2" data-onsuccess="onSignIn"></div>
         <button id="openSetting">設定</button>
         <dialog id="setting">
           <button id="closeSetting" autofocus>閉じる</button>
@@ -428,6 +432,7 @@
     </div>
 
     <dialog id="firstDialog">
+      <div class="g-signin2" data-onsuccess="onSignIn"></div>
       <p id="firstDialogMessage">
         URLを入力してください。
       </p>
@@ -1572,6 +1577,14 @@
       }
       function requestSetRecord(record, successHandler = undefined, failureHandler = undefined) {
         request(successHandler, failureHandler, "POST", JSON.stringify({method:"setRecord", parameters:[record]}))
+      }
+
+      function onSignIn() {
+        const profile = googleUser.getBasicProfile();
+        console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+        console.log('Name: ' + profile.getName());
+        console.log('Image URL: ' + profile.getImageUrl());
+        console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
       }
     </script>
     <script src="./script.js"></script>
