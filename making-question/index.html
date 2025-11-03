@@ -28,6 +28,12 @@
           initialQuestionData  = localData.questions;
         }
       }
+      {
+        const hrefURL = new URL(location.href);
+        const hrefURLParam = hrefURL.searchParams.get("questionIndex");
+        if (hrefURLParam !== null) initialCurrentQuestionIndex = parseInt(hrefURLParam);
+      }
+      history.replaceState(null, "", "./");
     </script>
 
 

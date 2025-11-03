@@ -13,7 +13,7 @@
 
     <script src="./authorization.js"></script>
     <script>
-      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxt6H7saDD4cD68IO-eYayjLcrJZMDNvQ-B8digshDX-K0oisBuXVnoRz2rGNeE3Cl_dQ/exec";
+      const SUBPAGE_URL = "./making-question/";
       const API_URL = "https://script.googleapis.com/v1/scripts/AKfycbxal0-53dkxPjzbtKHEfli2-MIgyjJZTookm6fSDW5jaqUT99zjSS8R5IDobvf12vwyBw:run";
 
       let accessToken = sessionStorage.getItem("quiz-app-access-token");
@@ -862,7 +862,7 @@
           lastQuestionIndex.push(nowQuestionIndex);
           if (lastQuestionIndex.length > 20) lastQuestionIndex.shift();
 
-          document.getElementById("makingQuestionLink").href = WEB_APP_URL + "?page=makingQuestion&questionIndex=" + questionData[nowQuestionIndex][8];
+          document.getElementById("makingQuestionLink").href = SUBPAGE_URL + "?page=makingQuestion&questionIndex=" + questionData[nowQuestionIndex][8];
 
           answerButton.disabled = true;
           setTimeout(() => answerButton.disabled = false, 1000);
@@ -1380,7 +1380,7 @@
           requestAnimationFrame(() => {
             //questionElement.textContent = questionData[lastQuestion_before][0];
             questionReadElement.textContent = questionData[lastQuestion_before][0];
-            document.getElementById("makingQuestionLink").href = WEB_APP_URL + "?page=makingQuestion&questionIndex=" + questionData[lastQuestion_before][8];
+            document.getElementById("makingQuestionLink").href = SUBPAGE_URL + "?page=makingQuestion&questionIndex=" + questionData[lastQuestion_before][8];
             answer1Element.textContent = questionData[lastQuestion_before][1];
             answer2Element.textContent = questionData[lastQuestion_before][2];
             questionLabelElement.textContent = questionData[lastQuestion_before][5];
