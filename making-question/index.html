@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作問 | クイズ</title>
+    <link rel="icon" href="./favicon.ico">
+    <meta name="robots" content="noindex">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
+
+    <script src="./../authorization.js"></script>
+    <script>
+      let accessToken = sessionStorage.getItem("quiz-app-access-token");
+      let accessTokenExpireDate = new Date(sessionStorage.getItem("quiz-app-access-token-expire"));
+
+      if (!accessToken) authorization(location.href);
+
+      let initialQuestionData = [];
+      let initialCurrentQuestionIndex = -1;
+      {
+        let localData = localStorage.getItem("data");
+        if (localData) {
+          localData = JSON.parse(localData);
+          initialQuestionData  = localData.questions;
+        }
+      }
+    </script>
+
+
+
+
+
+
+    
+    <style>
+      html {
+        color: #333333;
+        font-family: "Noto Sans JP", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: 400;
+        font-style: normal;
+      }
+      body {
+        margin: 0 max(30px, 5%);
+        margin-bottom: 10px;
+      }
+      button, input, textarea {
+        color: inherit;
+        font-family: inherit;
+        font-optical-sizing: inherit;
+        font-weight: inherit;
+        font-style: inherit;
+      }
+      input, textarea {
+        font-size: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      button:disabled {
+        color: #999999;
+        cursor: default;
+      }
+
+      .header {
+        position: sticky;
+        top: 0;
+        right: 0;
+        left: 0;
+        background-color: white;
+        padding: 5px 0;
+
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        align-content: space-between;
+        line-height: 1.9;
+      }
+      .header > div {
+        white-space: nowrap;
+      }
+      .header .returnButton {
+        background-color: ghostwhite;
+        border: none;
+        border-radius: 2px;
+        font-size: inherit;
+      }
+      .header .pageName {
+        display: inline-block;
+        margin-left: 10px;
+        font-size: 1.2rem;
+      }
+      .header .new {
+        background-color: #f5e9ff;
+        border: none;
+        border-radius: 2px;
+        font-size: inherit;
+      }
+      .header .sort {
+        background-color: #ffffbb;
+        border: none;
+        border-radius: 2px;
+        font-size: inherit;
+        margin-right: 7px;
+      }
+      #title {
+        display: inline-block;
+        font-size: 1.5rem;
+      }
+
+      #topList button, #questionsList button, #sort_last {
+        display: block;
+        width: 100%;
+        background-color: inherit;
+        border-left: none;
+        border-right: none;
+        border-top: none;
+        border-bottom: 2px solid #999999;
+        font-size: inherit;
+        padding: 10px 10px;
+      }
+      #topList button:hover, #questionsList button:hover, #sort_last:hover {
+        background-color: #f7f7f7;
+      }
+      #topList button:focus, #questionsList button:focus, #sort_last:focus {
+        background-color: #eaeaea;
+      }
+      #topList button {
+        text-align: center;
+      }
+      #questionsList button {
+        text-align: left;
+      }
+      #questionsList button span {
+        display: inline-block;
+        margin-right: 0.5rem;
+        background-color: lightskyblue;
+        border-radius: 4px;
+        padding: 0 4px;
+        color: white;
+      }
+      #sortDialog {
+        position: sticky;
+        width: fit-content;
+        max-width: 60vw;
+        height: fit-content;
+        bottom: 5vh;
+        margin: 5vh auto;
+        text-align: center;
+        background-color: white;
+        padding: 10px;
+        box-shadow: gray 0 0 5px;
+        border-radius: 3px;
+      }
+      #cancelSort {
+        margin-top: 7px;
+      }
+      #sort_last {
+        text-align: center;
+      }
+
+      #questionInput {
+        resize: vertical;
+        min-height: 7rem;
+        height: 7rem;
+        box-sizing: border-box;
+        width: 100%;
+      }
+      #answer1Input {
+        resize: vertical;
+        min-height: 3rem;
+        height: 3rem;
+        box-sizing: border-box;
+        width: 100%;
+      }
+      #answer2Input {
+        box-sizing: border-box;
+        width: 100%;
+      }
+      input:invalid {
+        border-color: red;
+        outline-color: red;
+        border-style: solid;
+      }
+      .includeAnswer, .notIncludeAnswer {
+        box-sizing: border-box;
+        width: calc(100% - 4rem);
+        margin-bottom: 7px;
+      }
+      .includeAnswer ~ button, .notIncludeAnswer ~ button {
+        box-sizing: border-box;
+        width: 3.5rem;
+        margin-left: 0.5rem;
+        background-color: inherit;
+        border: 1.6px solid #fa7a60;
+        border-radius: 3px;
+        font-size: inherit;
+      }
+      #addIncludeAnswerInput, #addNotIncludeAnswerInput {
+        width: 4rem;
+        margin: 5px 5px;
+        background-color: inherit;
+        border: 1.6px solid #7373ff;
+        border-radius: 3px;
+        font-size: inherit;
+      }
+      .heading {
+        font-size: 1.1rem;
+        margin-top: 10px;
+        margin-bottom: 4px;
+      }
+      #saveArea {
+        margin-top: 15px;
+      }
+      #saveChange {
+        width: 5rem;
+        padding: 3px;
+        background-color: inherit;
+        border: 1.6px solid #008000;
+        border-radius: 3px;
+        font-size: inherit;
+      }
+
+      .dialogButtonArea {
+        text-align: right;
+      }
+
+      #setNewQuestionListName {
+        border-radius: 5px;
+      }
+      #createQuestionList {
+        background-color: #a8d4ff;
+        border: 1.6px solid dodgerblue;
+        border-radius: 2px;
+      }
+      #cancelSettingQuestionList {
+        background-color: inherit;
+        border: 1.6px solid dodgerblue;
+        border-radius: 2px;
+      }
+
+      #cover {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        background-color: #ffffffcc;
+        z-index: 1;
+      }
+      #loading {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        background-color: #00000030;
+        z-index: 1;
+      }
+      #saving {
+        position: fixed;
+        width: fit-content;
+        height: fit-content;
+        top: 5vh;
+        right: 0;
+        left: 0;
+        margin: 0 auto;
+        background-color: white;
+        padding: 10px;
+        border-radius: 3px;
+        z-index: 2;
+      }
+      #backgroundStatus {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+      }
+      #backgroundLoading {
+        background-color: white;
+        padding: 10px;
+        border-radius: 3px;
+        margin-bottom: 10px;
+        z-index: 3;
+      }
+      #backgroundSaving {
+        background-color: white;
+        padding: 10px;
+        border-radius: 3px;
+        margin-top: 10px;
+        z-index: 3;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="cover"></div>
+    <div id="loading"></div>
+    <div id="saving">保存中...</div>
+    <div id="backgroundStatus">
+      <div id="backgroundLoading">通信中</div>
+      <div id="backgroundSaving">保存中</div>
+    </div>
+
+    <div id="top">
+      <div class="header">
+        <div>
+          <span id="title">問題管理</span>
+        </div>
+        <div>
+          <button id="newQuestionList" class="new">新規作成</button>
+        </div>
+      </div>
+      <div id="topList"></div>
+    </div>
+    <dialog id="setNewQuestionListName">
+      <form method="dialog">
+        <p>
+          <label for="questionListNameInput">新しく作成するリストの名前を入力してください。</label>
+        </p>
+        <p>
+          <input type="text" id="questionListNameInput">
+        </p>
+        <p class="dialogButtonArea">
+          <button type="submit" id="createQuestionList">決定</button>
+          <button type="reset" id="cancelSettingQuestionList">キャンセル</button>
+        </p>
+      </form>
+    </dialog>
+
+    <div id="questionList">
+      <div class="header">
+        <div>
+          <button id="returnToTop" class="returnButton">戻る</button>
+          <span id="questionListPageName" class="pageName"></span>
+        </div>
+        <div>
+          <button id="editOrder" class="sort">並び替え</button>
+          <button id="newQuestion" class="new">新規作成</button>
+        </div>
+      </div>
+      <div id="questionsList"></div>
+      <button id="sort_last">末尾へ並べ替え</button>
+      <div id="sortDialog">
+        <span id="sortDialogMessage"></span><br>
+        <button id="cancelSort">キャンセル</button>
+      </div>
+    </div>
+    
+
+    <div id="edit">
+      <div class="header">
+        <div>
+          <button id="returnToQuestionList" class="returnButton">戻る</button>
+          <span id="editPageName" class="pageName"></span>
+        </div>
+      </div>
+      <form>
+        <div class="heading">
+          問題文
+        </div>
+        <div>
+          <textarea id="questionInput"></textarea>
+        </div>
+        <div class="heading">
+          解答
+        </div>
+        <div>
+          <textarea id="answer1Input"></textarea>
+        </div>
+        <div class="heading">
+          読み
+        </div>
+        <div>
+          <input type="text" id="answer2Input" pattern="[^ ]*">
+        </div>
+        <div class="heading">
+          含める選択肢
+        </div>
+        <div id="includeAnswersInputArea">
+        </div>
+        <button id="addIncludeAnswerInput" type="button">追加</button>
+        <div class="heading">
+          含めない選択肢
+        </div>
+        <div id="notIncludeAnswersInputArea">
+        </div>
+        <button id="addNotIncludeAnswerInput" type="button">追加</button>
+        <div id="saveArea">
+          <button id="saveChange" type="submit">保存</button>
+          <span id="whetherSave">保存済</span>
+        </div>
+      </form>
+    </div>
+    <script>
+      let questionData = initialQuestionData;
+      let savedQuestionData = questionData;
+      const savingData = [];
+
+      const topPage = document.getElementById("top");
+      const questionPage = document.getElementById("questionList");
+      const editPage = document.getElementById("edit");
+      const coverElement = document.getElementById("cover");
+      const loadingElement = document.getElementById("loading");
+      const savingElement = document.getElementById("saving");
+      const backgroundLoadingElement = document.getElementById("backgroundLoading");
+      const backgroundSavingElement = document.getElementById("backgroundSaving");
+
+      let currentQuestionIndex = initialCurrentQuestionIndex;
+      let currentQuestionListName = "";
+      let currentQuestionListLength = 0;
+      let focusQuestionPageButton;
+      let topPageScroll = 0;
+      let questionPageScroll = 0;
+      let editSaved = true;
+      let editSaving = false;
+      let backgroundSaving = false;
+
+      let questionListSorting = false;
+      let onQuestionButtonClick;
+      let sortQuestionRange = [];
+
+      initialQuestionData = undefined;
+      initialCurrentQuestionIndex = undefined;
+
+      function setTopPage() {
+        requestAnimationFrame(() => {
+          const list = [];
+          for (let data of questionData) {
+            const name = data[5].replace(/ #[0-9]+$/, "");
+            if (name && !list.includes(name)) {
+              list.push(name);
+            }
+          }
+          const collator = new Intl.Collator("ja");
+          list.sort(collator.compare);
+
+          const parentElement = document.createElement('div');
+          document.getElementById("topList").replaceWith(parentElement);
+          parentElement.id = "topList";
+
+          i = 0;
+          const createElements = () => {
+            requestAnimationFrame(() => {
+              const name = list[i];
+              const element = document.createElement('button');
+              element.textContent = name;
+              parentElement.appendChild(element);
+              element.addEventListener('click', event => {
+                coverElement.style.display = "";
+                topPageScroll = window.scrollY;
+                setQuestionListPage(name);
+                topPage.style.display = "none";
+                questionList.style.display = "";
+                window.scrollTo(0, questionPageScroll);
+                setTimeout(() => {
+                  requestAnimationFrame(() => {
+                    coverElement.style.display = "none";
+                  });
+                }, 1);
+              });
+            
+
+              i++;
+              if (i < list.length) {
+                createElements();
+              }
+            });
+          }
+          createElements();
+          /*for (let i = 0; i < list.length; i++) {
+            const name = list[i];
+            const element = document.createElement('button');
+            element.textContent = name;
+            parentElement.appendChild(element);
+            element.addEventListener('click', event => {
+              coverElement.style.display = "";
+              topPageScroll = window.scrollY;
+              setQuestionListPage(name);
+              topPage.style.display = "none";
+              questionList.style.display = "";
+              window.scrollTo(0, questionPageScroll);
+              setTimeout(() => {
+                requestAnimationFrame(() => {
+                  coverElement.style.display = "none";
+                });
+              }, 1);
+            });
+          }*/
+        });
+      }
+      function setQuestionListPage(listName, scrollY = 0) {
+        requestAnimationFrame(() => {
+          currentQuestionListName = listName;
+          document.getElementById("questionListPageName").textContent = currentQuestionListName;
+
+          const list = [];
+          currentQuestionListLength = 0;
+          for (let i = 0; i < questionData.length; i++) {
+            const questionIndex = i;
+            const name = questionData[i][5].replace(/ #[0-9]+$/, "");
+            const index = parseInt(questionData[i][5].split(" #").at(-1)) - 1;
+            if (name == listName) {
+              list[index] = {
+                sentence: questionData[i][0],
+                answer: questionData[i][1],
+                index: questionIndex
+              };
+              currentQuestionListLength++;
+            }
+          }
+
+          const parentElement = document.createElement('div');
+          document.getElementById("questionsList").replaceWith(parentElement);
+          parentElement.id = "questionsList";
+          let number = 1;
+          let i = 0;
+          const createElements = () => {
+            requestAnimationFrame(() => {
+              let count = 0;
+              while (count <= 10 && i < list.length) {
+                if (!list[i]) {
+                  i++;
+                  continue;
+                }
+                count++;
+
+                const sentence = list[i].sentence;
+                const answer = list[i].answer;
+                const questionIndex = list[i].index;
+                const element = document.createElement('button');
+                const spanElement = document.createElement('span');
+                spanElement.appendChild(document.createTextNode(number));
+                element.appendChild(spanElement);
+                element.appendChild(document.createTextNode(sentence + "　　＜" + answer + "＞"));
+                parentElement.appendChild(element);
+                element.addEventListener('click', event => {
+                  if (!questionListSorting) {
+                    coverElement.style.display = "";
+                    questionPageScroll = window.scrollY;
+                    focusQuestionPageButton = element;
+                    setEditPage(questionIndex);
+                    questionPage.style.display = "none";
+                    editPage.style.display = "";
+                    window.scrollTo(0, 0);
+                    setTimeout(() => {
+                      requestAnimationFrame(() => {
+                        coverElement.style.display = "none";
+                      });
+                    }, 1);
+                  } else {
+                    onQuestionButtonClick(questionIndex);
+                  }
+                });
+                if (currentQuestionIndex == questionIndex) focusQuestionPageButton = element;
+                questionData[questionIndex][5] = listName + " #" + number;
+                number++;
+
+                i++;
+              }
+
+              if (window.scrollY < scrollY) {
+                window.scrollTo(0, scrollY);
+              } else if (scrollY == -1) {
+                window.scrollTo(0, document.body.scrollHeight);
+              }
+
+              if (i < list.length) {
+                createElements();
+              }
+            });
+          }
+          createElements();
+          /*for (let i = 0; i < list.length; i++) {
+            if (!list[i]) continue;
+            const sentence = list[i].sentence;
+            const answer = list[i].answer;
+            const questionIndex = list[i].index;
+            const element = document.createElement('button');
+            const spanElement = document.createElement('span');
+            spanElement.appendChild(document.createTextNode(number));
+            element.appendChild(spanElement);
+            element.appendChild(document.createTextNode(sentence + "　　＜" + answer + "＞"));
+            parentElement.appendChild(element);
+            element.addEventListener('click', event => {
+              if (!questionListSorting) {
+                coverElement.style.display = "";
+                questionPageScroll = window.scrollY;
+                focusQuestionPageButton = element;
+                setEditPage(questionIndex);
+                questionPage.style.display = "none";
+                editPage.style.display = "";
+                window.scrollTo(0, 0);
+                setTimeout(() => {
+                  requestAnimationFrame(() => {
+                    coverElement.style.display = "none";
+                  });
+                }, 1);
+              } else {
+                onQuestionButtonClick(questionIndex);
+              }
+            });
+            if (currentQuestionIndex == questionIndex) focusQuestionPageButton = element;
+            questionData[questionIndex][5] = listName + " #" + number;
+            number++;
+          }*/
+        });
+      }
+      function setEditPage(questionIndex) {
+        requestAnimationFrame(() => {
+          const question = questionIndex >= 0 ? questionData[questionIndex] : ["", "", "", "", ""];
+          if (questionIndex >= 0) {
+            currentQuestionIndex = questionIndex;
+          } else {
+            currentQuestionIndex = questionIndex;
+          }
+          document.getElementById("editPageName").textContent = (questionData[questionIndex] && questionData[questionIndex][5]) || (currentQuestionListName + " （新規）");
+          
+          document.getElementById("questionInput").value = question[0];
+          document.getElementById("answer1Input").value = question[1];
+          document.getElementById("answer2Input").value = question[2];
+          const includeAnswers = question[3].split("/");
+          const includeAnswersElement = document.createElement('div');
+          document.getElementById("includeAnswersInputArea").replaceWith(includeAnswersElement);
+          includeAnswersElement.id = "includeAnswersInputArea";
+          for (let i = 0; i < includeAnswers.length; i++) {
+            addIncludeAnswerInput().value = includeAnswers[i];
+          }
+          const notIncludeAnswers = question[4].split("/");
+          const notIncludeAnswersElement = document.createElement('div');
+          document.getElementById("notIncludeAnswersInputArea").replaceWith(notIncludeAnswersElement);
+          notIncludeAnswersElement.id = "notIncludeAnswersInputArea";
+          for (let i = 0; i < notIncludeAnswers.length; i++) {
+            addNotIncludeAnswerInput().value = notIncludeAnswers[i];
+          }
+
+          checkEdit();
+        });
+      }
+      function addIncludeAnswerInput() {
+        const parentElement = document.getElementById("includeAnswersInputArea");
+
+        const element = document.createElement('div');
+        parentElement.appendChild(element);
+        const input = document.createElement('input');
+        element.appendChild(input);
+        input.type = "text";
+        input.className = "includeAnswer";
+        input.pattern = "[^ ]*";
+        input.addEventListener('input', checkEdit);
+        const button = document.createElement('button');
+        element.appendChild(button);
+        button.type = "button";
+        button.textContent = "削除";
+        button.addEventListener('click', event => {
+          element.remove();
+          checkEdit();
+        });
+        return input;
+      }
+      function addNotIncludeAnswerInput() {
+        const parentElement = document.getElementById("notIncludeAnswersInputArea");
+
+        const element = document.createElement('div');
+        parentElement.appendChild(element);
+        const input = document.createElement('input');
+        element.appendChild(input);
+        input.type = "text";
+        input.className = "notIncludeAnswer";
+        input.pattern = "[^ ]*";
+        input.addEventListener('input', checkEdit);
+        const button = document.createElement('button');
+        element.appendChild(button);
+        button.type = "button";
+        button.textContent = "削除";
+        button.addEventListener('click', event => {
+          element.remove();
+          checkEdit();
+        });
+        return input;
+      }
+
+      function checkEdit() {
+        const data = [];
+        const pastData = currentQuestionIndex >= 0 ? savedQuestionData[currentQuestionIndex] : ["", "", "", "", ""];
+
+        data[0] = document.getElementById("questionInput").value;
+        data[1] = document.getElementById("answer1Input").value;
+        data[2] = document.getElementById("answer2Input").value;
+        data[3] = "";
+        const includeAnswersElement = document.getElementsByClassName("includeAnswer");
+        for (let i = 0; i < includeAnswersElement.length; i++) {
+          const value = includeAnswersElement[i].value;
+          if (value) {
+            data[3] += value;
+            if (i < includeAnswersElement.length - 1) {
+              data[3] += "/";
+            }
+          }
+        }
+        data[4] = "";
+        const notIncludeAnswersElement = document.getElementsByClassName("notIncludeAnswer");
+        for (let i = 0; i < notIncludeAnswersElement.length; i++) {
+          const value = notIncludeAnswersElement[i].value;
+          if (value) {
+            data[4] += value;
+            if (i < notIncludeAnswersElement.length - 1) {
+              data[4] += "/";
+            }
+          }
+        }
+        data[4] = data[4].replace(/\/+$/, "");
+
+        editSaving = false;
+        for (let i = 0; i < savingData.length; i++) {
+          if (currentQuestionIndex == savingData[i][1]) {
+            editSaving = true;
+            break;
+          }
+        }
+        
+        if (data[0] != pastData[0] || data[1] != pastData[1] || data[2] != pastData[2] || data[3] != pastData[3] || data[4] != pastData[4]) {
+          requestAnimationFrame(() => {
+            if (!editSaving) {
+              document.getElementById("whetherSave").textContent = "未保存";
+            } else {
+              document.getElementById("whetherSave").textContent = "保存中";
+            }
+          });
+          editSaved = false;
+          return true;
+        } else {
+          requestAnimationFrame(() => {
+            document.getElementById("whetherSave").textContent = "保存済";
+          });
+          editSaved = true;
+          return false;
+        }
+      }
+
+      backgroundLoadingElement.style.display = "none";
+      backgroundSavingElement.style.display = "none";
+      function saveData() {
+        if (!backgroundSaving) {
+          if (savingData.length >= 1) {
+            backgroundSaving = true;
+            backgroundSavingElement.style.display = "";
+
+            const data = savingData[0][0];
+            const questionIndex = savingData[0][1];
+            const questionListName = savingData[0][2];
+
+            setTimeout(() => {
+              backgroundLoadingElement.style.display = "";
+              google.script.run.withSuccessHandler(data => {
+                backgroundLoadingElement.style.display = "none";
+                savedQuestionData = data;
+                checkEdit();
+                const savedData = savingData.shift();
+                if (savedData[1] < 0 && savedData[2] == currentQuestionListName) setQuestionListPage(currentQuestionListName, window.scrollY);
+                backgroundSaving = false;
+                saveData();
+              }).withFailureHandler(error => {
+                backgroundLoadingElement.style.display = "none";
+                console.error(error.name + ": " + error.message);
+                checkEdit();
+                backgroundSaving = false;
+                saveData();
+              }).setQuestion(data, questionIndex, questionListName);
+            }, 1000);
+          } else {
+            backgroundSaving = false;
+            backgroundSavingElement.style.display = "none";
+            questionData = savedQuestionData;
+          }
+        }
+      }
+
+      document.getElementById("addIncludeAnswerInput").addEventListener('click', addIncludeAnswerInput);
+      document.getElementById("addNotIncludeAnswerInput").addEventListener('click', addNotIncludeAnswerInput);
+      document.getElementById("questionInput").addEventListener('input', checkEdit);
+      document.getElementById("answer1Input").addEventListener('input', checkEdit);
+      document.getElementById("answer2Input").addEventListener('input', checkEdit);
+      document.getElementById("saveChange").addEventListener('click', event => {
+        event.preventDefault();
+
+        const data = [];
+        const pastData = currentQuestionIndex >= 0 ? questionData[currentQuestionIndex] : [];
+
+        data[0] = document.getElementById("questionInput").value;
+        data[1] = document.getElementById("answer1Input").value;
+        data[2] = document.getElementById("answer2Input").value;
+        data[3] = "";
+        const includeAnswersElement = document.getElementsByClassName("includeAnswer");
+        for (let i = 0; i < includeAnswersElement.length; i++) {
+          const value = includeAnswersElement[i].value;
+          if (value) {
+            data[3] += value;
+            if (i < includeAnswersElement.length - 1) {
+              data[3] += "/";
+            }
+          }
+        }
+        data[4] = "";
+        const notIncludeAnswersElement = document.getElementsByClassName("notIncludeAnswer");
+        for (let i = 0; i < notIncludeAnswersElement.length; i++) {
+          const value = notIncludeAnswersElement[i].value;
+          if (value) {
+            data[4] += value;
+            if (i < notIncludeAnswersElement.length - 1) {
+              data[4] += "/";
+            }
+          }
+        }
+        data[4] = data[4].replace(/\/+$/, "");
+        
+        if (data[0] != pastData[0] || data[1] != pastData[1] || data[2] != pastData[2] || data[3] != pastData[3] || data[4] != pastData[4]) {
+          savingData.push([data, currentQuestionIndex, currentQuestionListName]);
+          saveData();
+          checkEdit();
+          if (currentQuestionIndex >= 0) {
+            questionData[currentQuestionIndex][0] = data[0];
+            questionData[currentQuestionIndex][1] = data[1];
+            questionData[currentQuestionIndex][2] = data[2];
+            questionData[currentQuestionIndex][3] = data[3];
+            questionData[currentQuestionIndex][4] = data[4];
+          }/* else {
+            let index = 1;
+            for (let i = 1; i < questionData.length; i++) {
+              if (questionData[i][5].replace(/ #[0-9]+$/, "") == currentQuestionListName) {
+                const currentIndex = parseInt(questionData[i][5].split(" #").at(-1));
+                if (currentIndex >= index) {
+                  index = currentIndex + 1;
+                }
+              }
+            }
+            const dataWithIndex = data.concat(currentQuestionListName + " #" + index);
+            questionData.push(dataWithIndex);
+            //questionData.push(data.concat(currentQuestionListName));
+          }*/
+          setTopPage();
+          let scrollY = 0;
+          if (currentQuestionIndex >= 0) {
+            scrollY = questionPageScroll;
+          } else {
+            scrollY = -1;
+          }
+          setQuestionListPage(currentQuestionListName, scrollY);
+          requestAnimationFrame(() => {
+            if (currentQuestionIndex >= 0 && (questionData[currentQuestionIndex] && questionData[currentQuestionIndex][5])) {
+              if (editSaving || editSaved) {
+                coverElement.style.display = "";
+                editPage.style.display = "none";
+                questionPage.style.display = "";
+                if (focusQuestionPageButton) focusQuestionPageButton.focus();
+                currentQuestionIndex = -1;
+                //window.scrollTo(0, questionPageScroll);
+                setTimeout(() => {
+                  requestAnimationFrame(() => {
+                    coverElement.style.display = "none";
+                  });
+                }, 1);
+              }
+            } else if (currentQuestionIndex >= 0) {
+              editPage.style.display = "none";
+              topPage.style.display = "none";
+              questionPage.style.display = "";
+              currentQuestionIndex = -1;
+              //window.scrollTo(0, questionPageScroll);
+            } else {
+              editPage.style.display = "none";
+              topPage.style.display = "none";
+              questionPage.style.display = "";
+              currentQuestionIndex = -1;
+              //requestAnimationFrame(() => window.scrollTo(0, document.body.scrollHeight));
+            }
+            /*document.getElementById("whetherSave").textContent = "保存中";
+            document.getElementById("saveChange").disabled = true;
+            google.script.run.withSuccessHandler(data => {
+              document.getElementById("saveChange").disabled = false;
+              questionData = data;
+              setTopPage();
+              setQuestionListPage(currentQuestionListName);
+              if (currentQuestionIndex >= 0 && (questionData[currentQuestionIndex] && questionData[currentQuestionIndex][5])) {
+                checkEdit();
+                if (editSaved) {
+                  coverElement.style.display = "";
+                  editPage.style.display = "none";
+                  questionPage.style.display = "";
+                  if (focusQuestionPageButton) focusQuestionPageButton.focus();
+                  currentQuestionIndex = -1;
+                  window.scrollTo(0, questionPageScroll);
+                  setTimeout(() => {
+                    requestAnimationFrame(() => {
+                      coverElement.style.display = "none";
+                    });
+                  }, 1);
+                }
+              } else if (currentQuestionIndex >= 0) {
+                editPage.style.display = "none";
+                topPage.style.display = "none";
+                questionPage.style.display = "";
+                currentQuestionIndex = -1;
+                window.scrollTo(0, questionPageScroll);
+              } else {
+                editPage.style.display = "none";
+                topPage.style.display = "none";
+                questionPage.style.display = "";
+                currentQuestionIndex = -1;
+                requestAnimationFrame(() => window.scrollTo(0, document.body.scrollHeight));
+              }
+            }).withFailureHandler(error => {
+              document.getElementById("saveChange").disabled = false;
+              console.error(error.name + ": " + error.message);
+              checkEdit();
+            }).setQuestion(data, currentQuestionIndex, currentQuestionListName);*/
+          });
+        }
+      });
+
+      // 問題の新規作成
+      document.getElementById("newQuestion").addEventListener('click', event => {
+        questionPageScroll = window.scrollY;
+        setEditPage(-1);
+        questionPage.style.display = "none";
+        editPage.style.display = "";
+        window.scrollTo(0, 0);
+      });
+      // 問題リストの新規作成
+      document.getElementById("newQuestionList").addEventListener('click', event => {
+        document.getElementById("setNewQuestionListName").showModal();
+      });
+      document.getElementById("createQuestionList").addEventListener('click', event => {
+        const questionListName = document.getElementById("questionListNameInput").value;
+        if (questionListName) {
+          document.getElementById("questionListNameInput").value = "";
+          setQuestionListPage(questionListName);
+          topPage.style.display = "none";
+          questionPage.style.display = "";
+        }
+      });
+      document.getElementById("cancelSettingQuestionList").addEventListener('click', event => {
+        document.getElementById("setNewQuestionListName").close();
+      });
+
+      // 問題の並び替え
+      function decideSortStart(questionNumber) {
+        sortQuestionRange[0] = parseInt(questionData[questionNumber][5].split(" #").at(-1));
+        onQuestionButtonClick = decideSortEnd;
+        document.getElementById("sortDialogMessage").textContent = "移動する範囲の終点となる問題をクリックしてください。（" + sortQuestionRange[0] + "～）";
+      }
+      function decideSortEnd(questionNumber) {
+        sortQuestionRange[1] = parseInt(questionData[questionNumber][5].split(" #").at(-1));
+        if (sortQuestionRange[0] > sortQuestionRange[1]) sortQuestionRange.push(sortQuestionRange.shift());
+        onQuestionButtonClick = finishSort;
+        document.getElementById("sort_last").style.display = "";
+        document.getElementById("sortDialogMessage").textContent = "移動先の１つ後ろの問題をクリックしてください。（" + sortQuestionRange[0] + "～" + sortQuestionRange[1] + "を移動）";
+      }
+      function finishSort(questionNumber) {
+        questionListSorting = false;
+        document.getElementById("sortDialog").style.display = "none";
+        document.getElementById("sort_last").style.display = "none";
+        const sortPosition = questionNumber >= 0 ? parseInt(questionData[questionNumber][5].split(" #").at(-1)) : currentQuestionListLength + 1;
+        if (sortPosition < sortQuestionRange[0] || sortQuestionRange[1] + 1 < sortPosition) {
+          const sortQuestionLength = sortQuestionRange[1] - sortQuestionRange[0] + 1;
+          const moveDistance = sortPosition > sortQuestionRange[0] ? sortPosition - sortQuestionRange[0] - 1 : sortPosition - sortQuestionRange[0];
+          const orderData = [];
+          for (let i = 0; i < questionData.length; i++) {
+            if (questionData[i][5].replace(/ #[0-9]+$/, "") == currentQuestionListName) {
+              const number = parseInt(questionData[i][5].split(" #").at(-1));
+              if (sortQuestionRange[0] <= number && number <= sortQuestionRange[1]) {  // 移動する問題のとき
+                orderData[i] = [currentQuestionListName + " #" + (number + moveDistance)];
+              } else {  // 移動しない問題のとき
+                if (number < sortQuestionRange[0] && number < sortPosition) {
+                  orderData[i] = [currentQuestionListName + " #" + number];
+                } else if (number > sortQuestionRange[1] && number > sortPosition) {
+                  orderData[i] = [currentQuestionListName + " #" + number];
+                } else if (sortPosition <= number && number < sortQuestionRange[0]) {
+                  orderData[i] = [currentQuestionListName + " #" + (number + sortQuestionLength)];
+                } else if (sortQuestionRange[1] < number && number < sortPosition) {
+                  orderData[i] = [currentQuestionListName + " #" + (number - sortQuestionLength)];
+                }
+              }
+            }
+          }
+          loadingElement.style.display = "";
+          savingElement.style.display = "";
+          google.script.run.withSuccessHandler(data => {
+            questionData = data;
+            setQuestionListPage(currentQuestionListName);
+            loadingElement.style.display = "none";
+            savingElement.style.display = "none";
+          }).withFailureHandler(error => {
+            console.error(error.name + ": " + error.message);
+            alert("変更に失敗しました。");
+            loadingElement.style.display = "none";
+            savingElement.style.display = "none";
+          }).setOrder(orderData);
+        }
+        document.getElementById("returnToTop").disabled = false;
+        document.getElementById("editOrder").disabled = false;
+        document.getElementById("newQuestion").disabled = false;
+      }
+      document.getElementById("editOrder").addEventListener('click', event => {
+        questionListSorting = true;
+        onQuestionButtonClick = decideSortStart;
+
+        document.getElementById("returnToTop").disabled = true;
+        document.getElementById("editOrder").disabled = true;
+        document.getElementById("newQuestion").disabled = true;
+
+        document.getElementById("sortDialogMessage").textContent = "移動する範囲の起点となる問題をクリックしてください。";
+        document.getElementById("sortDialog").style.display = "";
+      });
+      document.getElementById("cancelSort").addEventListener('click', event => {
+        questionListSorting = false;
+
+        document.getElementById("returnToTop").disabled = false;
+        document.getElementById("editOrder").disabled = false;
+        document.getElementById("newQuestion").disabled = false;
+
+        document.getElementById("sortDialog").style.display = "none";
+        document.getElementById("sort_last").style.display = "none";
+      });
+      document.getElementById("sort_last").addEventListener('click', event => {
+        if (questionListSorting) onQuestionButtonClick(-1);
+      });
+      document.getElementById("sortDialog").style.display = "none";
+      document.getElementById("sort_last").style.display = "none";
+      
+      // 戻る
+      document.getElementById("returnToTop").addEventListener('click', event => {
+        requestAnimationFrame(() => {
+          coverElement.style.display = "";
+          requestAnimationFrame(() => {
+            questionPageScroll = 0;
+            questionPage.style.display = "none";
+            topPage.style.display = "";
+            window.scrollTo(0, topPageScroll);
+            setTimeout(() => {
+              requestAnimationFrame(() => {
+                coverElement.style.display = "none";
+              });
+            }, 1);
+          });
+        });
+      });
+      document.getElementById("returnToQuestionList").addEventListener('click', event => {
+        if (editSaved || editSaving || confirm("保存されていない変更があります。\n変更を破棄しますか。")) {
+          coverElement.style.display = "";
+          editPage.style.display = "none";
+          questionPage.style.display = "";
+          if (focusQuestionPageButton) focusQuestionPageButton.focus();
+          currentQuestionIndex = -1;
+          window.scrollTo(0, questionPageScroll);
+          setTimeout(() => {
+            requestAnimationFrame(() => {
+              coverElement.style.display = "none";
+            });
+          }, 1);
+        }
+      });
+
+      savingElement.style.display = "none";
+      loadingElement.style.display = "none";
+      if (currentQuestionIndex < 0) {
+        questionPage.style.display = "none";
+        editPage.style.display = "none";
+        setTopPage();
+      } else {
+        topPage.style.display = "none";
+        questionPage.style.display = "none";
+        setTopPage();
+        setQuestionListPage(questionData[currentQuestionIndex][5].replace(/ #[0-9]+$/, ""));
+        setEditPage(currentQuestionIndex);
+      }
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          coverElement.style.display = "none";
+        });
+      }, 1);
+    </script>
+  </body>
+</html>
