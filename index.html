@@ -1650,7 +1650,7 @@
         //request(successHandler, failureHandler, "POST", JSON.stringify({method:"setRecord", parameters:[record]}))
         const body = {
           function: "setRecordToSheet",
-          parameters: record
+          parameters: [record]
         };
         const header = {
           'Content-type': "application/json",
