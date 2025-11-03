@@ -1275,11 +1275,13 @@
           const questionSelectLabel = document.createElement("label");
           questionSelectContainer.appendChild(questionSelectLabel);
           const questionSelectInput = document.createElement("input");
+          questionSelectElement.id = "question-select-checkbox-" + questionName;
           questionSelectLabel.appendChild(questionSelectInput);
           questionSelectInput.type = "checkbox";
           questionSelectInput.checked = questionSelect[questionName].is_question;
           questionSelectLabel.appendChild(document.createTextNode(questionName));
           const questionRangeMinElement = document.createElement("input");
+          questionRangeMinElement.id = "question-range-min-" + questionName;
           questionSelectContainer.appendChild(questionRangeMinElement);
           questionRangeMinElement.type = "text";
           questionRangeMinElement.inputMode = "numeric";
@@ -1291,6 +1293,7 @@
           }
           questionSelectContainer.appendChild(document.createTextNode("～"));
           const questionRangeMaxElement = document.createElement("input");
+          questionRangeMaxElement.id = "question-range-max-" + questionName;
           questionSelectContainer.appendChild(questionRangeMaxElement);
           questionRangeMaxElement.type = "text";
           questionRangeMaxElement.inputMode = "numeric";
