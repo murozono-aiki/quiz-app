@@ -19,7 +19,7 @@
       let accessToken = sessionStorage.getItem("quiz-app-access-token");
       let accessTokenExpireDate = new Date(sessionStorage.getItem("quiz-app-access-token-expire"));
 
-      if (!accessToken) authorization(location.href);
+      if (!accessToken || new Date().getTime() >= accessTokenExpireDate.getTime() - 10 * 60 * 1000) authorization(location.href);
     </script>
 
 
