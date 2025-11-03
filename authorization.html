@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>認可 | クイズ</title>
+
+  <script>
+    /**
+     * Dateオブジェクトを日付と時刻を表す文字列に変換する関数
+     * @param {Date} date - 変換する日付
+     * @returns 0000-00-00T00:00:00+09:00の形で表された日付
+     */
+    function formatDateTime(date) {
+      const _year = date.getFullYear();
+      const _month = date.getMonth() + 1;
+      const _date = date.getDate();
+      const _hours = date.getHours();
+      const _minites = date.getMinutes();
+      const _seconds = date.getSeconds();
+      let yearString = _year.toString();
+      let monthString = _month.toString();
+      let dateString = _date.toString();
+      let hoursString = _hours.toString();
+      let minitesString = _minites.toString();
+      let secondsString = _seconds.toString();
+      if (monthString.length < 2) {
+        monthString = "0".repeat(2 - monthString.length) + monthString;
+      }
+      if (dateString.length < 2) {
+        dateString = "0".repeat(2 - dateString.length) + dateString;
+      }
+      if (hoursString.length < 2) {
+        hoursString = "0".repeat(2 - hoursString.length) + hoursString;
+      }
+      if (minitesString.length < 2) {
+        minitesString = "0".repeat(2 - minitesString.length) + minitesString;
+      }
+      if (secondsString.length < 2) {
+        secondsString = "0".repeat(2 - secondsString.length) + secondsString;
+      }
+      return yearString + "-" + monthString + "-" + dateString + "T" + hoursString + ":" + minitesString + ":" + secondsString + "+09:00";
+    }
+
+    let accessToken = "";
+    let expireDate = new Date();
+    let correctState = false;
+    let authSuccess = true;
+
+    const hrefURL = new URL(location.href);
+    const hrefHash = hrefURL.hash.replace(/^#/, "");
+    const hrefURLParams = hrefHash.split("&");
+    hrefURLParams.forEach(value => {
+      const paramSplit = value.split("=");
+      if (paramSplit[0] && paramSplit[1]) {
+        const paramKey = paramSplit[0];
+        const paramValue = paramSplit[1];
+        if (paramKey == "access_token") {
+          accessToken = paramValue;
+        } else if (paramKey == "state") {
+          const authState = localStorage.getItem("quiz-app-auth-state");
+          if (paramValue == authState) correctState = true;
+        } else if (paramKey == "scope") {
+          const scopes = paramValue.split(" ");
+          if (!scopes.includes("https://www.googleapis.com/auth/spreadsheets.currentonly")) authSuccess = false;
+        } else if (paramKey == "expires_in") {
+          const expireSecond = parseInt(paramValue);
+          expireDate.setSeconds(expireDate.getSeconds() + expireSecond);
+        } else if (paramKey == "error") {
+          console.info("error:", paramValue);
+          authSuccess = false;
+        }
+      }
+    });
+
+    if (!accessToken || !correctState || !authSuccess) {
+      window.location = "about:blank";
+    } else {
+      const state = self.crypto.randomUUID();
+      localStorage.setItem("quiz-app-auth-state", state);
+      sessionStorage.setItem("quiz-app-access-token", accessToken);
+      sessionStorage.setItem("quiz-app-access-token-expire", formatDateTime(expireDate));
+
+      const redirectURL = sessionStorage.getItem("quiz-app-redirect-URL");
+      if (redirectURL) {
+        window.location = redirectURL;
+      } else {
+        window.location = "about:blank";
+      }
+    }
+  </script>
+</head>
+<body>
+</body>
+</html>

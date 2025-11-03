@@ -1,10 +1,12 @@
 var cacheName = "QuizAppPWA";
 var appShellFiles = [
-  "./index.html",
+  "./",
   "./script.js",
+  "./making-question/",
+  "./authorization.js",
   "./favicon.ico",
   "./icons/quiz (192).png",
-  "./icons/quiz (512).png",
+  "./icons/quiz (512).png"
 ];
 
 self.addEventListener("install", event => {
@@ -53,7 +55,7 @@ async function networkResponse(request) {
 */
 async function cache(request) {
   const requestUrl = new URL(request.url);
-  if (request.method == "GET" && requestUrl.origin == location.origin) {
+  if (request.method == "GET" && requestUrl.origin == location.origin && !request.url.includes("authorization.html")) {
     const cacheResponsePromise = cacheResponse(request);
     const networkResponsePromise = networkResponse(request);
     return (await cacheResponsePromise) || (await networkResponsePromise);
