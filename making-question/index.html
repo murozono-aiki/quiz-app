@@ -646,6 +646,7 @@
         parentElement.appendChild(element);
         const input = document.createElement('input');
         element.appendChild(input);
+        input.name = "includeAnswerInput";
         input.type = "text";
         input.className = "includeAnswer";
         input.pattern = "[^ ]*";
@@ -667,6 +668,7 @@
         parentElement.appendChild(element);
         const input = document.createElement('input');
         element.appendChild(input);
+        input.name = "notIncludeAnswerInput";
         input.type = "text";
         input.className = "notIncludeAnswer";
         input.pattern = "[^ ]*";
