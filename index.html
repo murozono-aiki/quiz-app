@@ -50,7 +50,8 @@
             }
             if (paramName == authState) correctState = true;
           } else if (paramKey == "scope") {
-            if (paramName != "https://www.googleapis.com/auth/documents.currentonly") authSuccess = false;
+            const scopes = paramName.split(" ");
+            if (!scopes.includes("https://www.googleapis.com/auth/spreadsheets.currentonly")) authSuccess = false;
           } else if (paramKey == "error") {
             console.info("error:", paramName);
             authSuccess = false;
@@ -61,7 +62,10 @@
       if (!accessToken || !correctState || !authSuccess) {
         const state = self.crypto.randomUUID();
         localStorage.setItem("quiz-app-auth-state", state);
-        window.location = "https://accounts.google.com/o/oauth2/v2/auth?client_id=686329872435-t8vnffd6h1q8i45i1e2eu9fel3h5nndc.apps.googleusercontent.com&redirect_uri=https://murozono-aiki.github.io/quiz-app/&response_type=token&scope=https://www.googleapis.com/auth/documents.currentonly&state=" + state;
+        window.location = "https://accounts.google.com/o/oauth2/v2/auth?client_id=686329872435-t8vnffd6h1q8i45i1e2eu9fel3h5nndc.apps.googleusercontent.com&redirect_uri=https://murozono-aiki.github.io/quiz-app/&response_type=token&scope=https://www.googleapis.com/auth/spreadsheets.currentonly&state=" + state;
+      } else {
+        const state = self.crypto.randomUUID();
+        localStorage.setItem("quiz-app-auth-state", state);
       }
     </script>
 
