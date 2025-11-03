@@ -17,12 +17,6 @@
     <meta name="google-signin-client_id" content="686329872435-t8vnffd6h1q8i45i1e2eu9fel3h5nndc.apps.googleusercontent.com"-->
 
     <script>
-      let url = "";
-      /*try {
-        url = localStorage.getItem("quiz-app-URL");
-      } catch(error) {
-        console.error(error);
-      }*/
       const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxt6H7saDD4cD68IO-eYayjLcrJZMDNvQ-B8digshDX-K0oisBuXVnoRz2rGNeE3Cl_dQ/exec";
       const API_URL = "https://script.googleapis.com/v1/scripts/AKfycbxal0-53dkxPjzbtKHEfli2-MIgyjJZTookm6fSDW5jaqUT99zjSS8R5IDobvf12vwyBw:run";
 
@@ -38,7 +32,6 @@
         if (paramSplit[0] && paramSplit[1]) {
           const paramKey = paramSplit[0];
           const paramName = paramSplit[1];
-          console.log(paramKey, paramName);
           if (paramKey == "access_token") {
             accessToken = paramName;
           } else if (paramKey == "state") {
@@ -1494,7 +1487,7 @@
             recordLength = 0;
             questionData = data;
             setQuestionSelect();
-          })  // 記録を送信
+          });  // 記録を送信
         }
 
         settingButton.style.display = "";
@@ -1593,32 +1586,7 @@
 
 
 
-      async function request(successHandler, failureHandler, method = "GET", body = undefined, parameters = "") {
-        if (WEB_APP_URL && URL.canParse(WEB_APP_URL)) {
-          const urlWithParameters = WEB_APP_URL + parameters;
-
-          startLoad();
-          const response = await fetch(urlWithParameters, {method: method, body: body});
-          finishLoad();
-          if (!response.ok) {
-            if (failureHandler) failureHandler();
-            throw new Error(`レスポンスステータス: ${response.status}`);
-          }
-
-          const json = await response.json();
-          if (successHandler) successHandler(json);
-        } else {
-          document.getElementById("firstForm").addEventListener("submit", event => {
-            url = document.getElementById("API-input").value;
-            if (url) localStorage.setItem("quiz-app-URL", url);
-            request(successHandler, failureHandler, method, body, parameters);
-          }, {once: true});
-          document.getElementById("firstDialog").showModal();
-        }
-      }
-
       async function requestGetData(successHandler = undefined, failureHandler = undefined) {
-        //request(successHandler, failureHandler);
         const body = {
           function: "getData"
         };
@@ -1634,7 +1602,6 @@
           if (failureHandler) failureHandler();
         } else {
           const json = await response.json();
-          console.log(json);
           if (!json.done) {
             console.error("Requested script didn't finish.");
             if (failureHandler) failureHandler();
@@ -1647,7 +1614,6 @@
         }
       }
       async function requestSetRecord(record, successHandler = undefined, failureHandler = undefined) {
-        //request(successHandler, failureHandler, "POST", JSON.stringify({method:"setRecord", parameters:[record]}))
         const body = {
           function: "setRecordToSheet",
           parameters: [record]
@@ -1664,7 +1630,6 @@
           if (failureHandler) failureHandler();
         } else {
           const json = await response.json();
-          console.log(json);
           if (!json.done) {
             console.error("Requested script didn't finish.");
             if (failureHandler) failureHandler();
@@ -1676,14 +1641,6 @@
           }
         }
       }
-
-      /*function onSignIn() {
-        const profile = googleUser.getBasicProfile();
-        console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-        console.log('Name: ' + profile.getName());
-        console.log('Image URL: ' + profile.getImageUrl());
-        console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-      }*/
     </script>
     <script src="./script.js"></script>
   </body>
