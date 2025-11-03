@@ -754,7 +754,7 @@
 
             setTimeout(() => {
               backgroundLoadingElement.style.display = "";
-              google.script.run.withSuccessHandler(data => {
+              requestSetQuestion(data, questionIndex, questionListName, data => {
                 backgroundLoadingElement.style.display = "none";
                 savedQuestionData = data;
                 checkEdit();
@@ -762,13 +762,12 @@
                 if (savedData[1] < 0 && savedData[2] == currentQuestionListName) setQuestionListPage(currentQuestionListName, window.scrollY);
                 backgroundSaving = false;
                 saveData();
-              }).withFailureHandler(error => {
+              }, () => {
                 backgroundLoadingElement.style.display = "none";
-                console.error(error.name + ": " + error.message);
                 checkEdit();
                 backgroundSaving = false;
                 saveData();
-              }).setQuestion(data, questionIndex, questionListName);
+              });
             }, 1000);
           } else {
             backgroundSaving = false;
@@ -987,17 +986,16 @@
           }
           loadingElement.style.display = "";
           savingElement.style.display = "";
-          google.script.run.withSuccessHandler(data => {
+          requestSetOrder(orderData, data => {
             questionData = data;
             setQuestionListPage(currentQuestionListName);
             loadingElement.style.display = "none";
             savingElement.style.display = "none";
-          }).withFailureHandler(error => {
-            console.error(error.name + ": " + error.message);
+          }, () => {
             alert("変更に失敗しました。");
             loadingElement.style.display = "none";
             savingElement.style.display = "none";
-          }).setOrder(orderData);
+          });
         }
         document.getElementById("returnToTop").disabled = false;
         document.getElementById("editOrder").disabled = false;
@@ -1081,6 +1079,71 @@
           coverElement.style.display = "none";
         });
       }, 1);
+
+
+
+
+
+
+
+      async function requestSetQuestion(data, questionIndex, questionListName, successHandler = undefined, failureHandler = undefined) {
+        const body = {
+          function: "setQuestion",
+          parameters: [data, questionIndex, questionListName]
+        };
+        const header = {
+          'Content-type': "application/json",
+          'Authorization': "Bearer " + accessToken
+        };
+        const response = await fetch(API_URL, {method: "POST", body: JSON.stringify(body), headers: header});
+        if (!response.ok) {
+          console.error(`レスポンスステータス: ${response.status}`);
+          if (failureHandler) failureHandler();
+        } else {
+          const json = await response.json();
+          if (!json.done) {
+            console.error("Requested script didn't finish.");
+            if (failureHandler) failureHandler();
+          } else if (json.error) {
+            console.error(json.error);
+            if (failureHandler) failureHandler();
+          } else if (json.response) {
+            if (successHandler) successHandler(json.response.result);
+            if (new Date().getTime() >= accessTokenExpireDate.getTime() - 5 * 60 * 1000) {
+              authorization(location.href);
+            }
+          }
+        }
+      }
+      async function requestSetOrder(orderData, successHandler = undefined, failureHandler = undefined) {
+        const body = {
+          function: "setOrder",
+          parameters: [orderData]
+        };
+        const header = {
+          'Content-type': "application/json",
+          'Authorization': "Bearer " + accessToken
+        };
+        const response = await fetch(API_URL, {method: "POST", body: JSON.stringify(body), headers: header});
+        if (!response.ok) {
+          console.error(`レスポンスステータス: ${response.status}`);
+          if (failureHandler) failureHandler();
+        } else {
+          const json = await response.json();
+          if (!json.done) {
+            console.error("Requested script didn't finish.");
+            if (failureHandler) failureHandler();
+          } else if (json.error) {
+            console.error(json.error);
+            if (failureHandler) failureHandler();
+          } else if (json.response) {
+            if (successHandler) successHandler(json.response.result);
+            if (new Date().getTime() >= accessTokenExpireDate.getTime() - 5 * 60 * 1000) {
+              authorization(location.href);
+            }
+          }
+        }
+      }
     </script>
   </body>
 </html>
