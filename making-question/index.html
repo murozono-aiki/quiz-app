@@ -773,11 +773,11 @@
                 if (savedData[1] < 0 && savedData[2] == currentQuestionListName) setQuestionListPage(currentQuestionListName, window.scrollY);
                 backgroundSaving = false;
                 saveData();
-              }, () => {
+              }, retry => {
                 backgroundLoadingElement.style.display = "none";
                 checkEdit();
                 backgroundSaving = false;
-                saveData();
+                if (retry) saveData();
               });
             }, 1000);
           } else {
@@ -1115,15 +1115,15 @@
         const response = await fetch(API_URL, {method: "POST", body: JSON.stringify(body), headers: header});
         if (!response.ok) {
           console.error(`レスポンスステータス: ${response.status}`);
-          if (failureHandler) failureHandler();
+          if (failureHandler) failureHandler(false);
         } else {
           const json = await response.json();
           if (!json.done) {
             console.error("Requested script didn't finish.");
-            if (failureHandler) failureHandler();
+            if (failureHandler) failureHandler(false);
           } else if (json.error) {
             console.error(json.error);
-            if (failureHandler) failureHandler();
+            if (failureHandler) failureHandler(false);
           } else if (json.response) {
             if (successHandler) successHandler(json.response.result);
           }
