@@ -25,8 +25,7 @@
       {
         let localData = localStorage.getItem("quiz-app-original-data");
         if (localData) {
-          localData = JSON.parse(localData);
-          initialQuestionData  = localData.questions;
+          initialQuestionData = JSON.parse(localData);
         }
       }
       {
@@ -1076,8 +1075,8 @@
         }
       });
 
-      savingElement.style.display = "none";
       function initialize() {
+        savingElement.style.display = "none";
         loadingElement.style.display = "none";
         if (currentQuestionIndex < 0) {
           questionPage.style.display = "none";
@@ -1099,10 +1098,12 @@
       if (questionData) {
         initialize();
       } else {
+        savingElement.textContent = "読み込み中...";
         requestGetAllQuestionData(data => {
           questionData = data;
           savedQuestionData = data;
           localStorage.setItem("quiz-app-original-data", JSON.stringify(savedQuestionData));
+          savingElement.textContent = "保存中...";
           initialize();
         }, () => {
           savingElement.textContent = "データの読み込みに失敗しました。";
