@@ -316,6 +316,7 @@
       <div class="header">
         <div>
           <span id="title">問題管理</span>
+          <button id="returnToQuestionPage" class="returnButton">クイズへ</button>
         </div>
         <div>
           <button id="newQuestionList" class="new">新規作成</button>
@@ -1074,6 +1075,14 @@
           }, 1);
         }
       });
+
+      if(window.matchMedia('(display-mode: standalone)').matches){
+        document.getElementById("returnToQuestionPage").addEventListener('click', event => {
+          window.location.assign("./../");
+        });
+      } else {
+        document.getElementById("returnToQuestionPage").style.display = "none";
+      }
 
       function initialize() {
         savingElement.style.display = "none";
