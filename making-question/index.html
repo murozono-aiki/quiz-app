@@ -20,10 +20,10 @@
 
       if (!accessToken || new Date().getTime() >= accessTokenExpireDate.getTime() - 10 * 60 * 1000) authorize(location.href);
 
-      let initialQuestionData = [];
+      let initialQuestionData = null;
       let initialCurrentQuestionIndex = -1;
       {
-        let localData = localStorage.getItem("data");
+        let localData = localStorage.getItem("quiz-app-original-data");
         if (localData) {
           localData = JSON.parse(localData);
           initialQuestionData  = localData.questions;
@@ -769,6 +769,7 @@
               requestSetQuestion(data, questionIndex, questionListName, data => {
                 backgroundLoadingElement.style.display = "none";
                 savedQuestionData = data;
+                localStorage.setItem("quiz-app-original-data", JSON.stringify(savedQuestionData));
                 checkEdit();
                 const savedData = savingData.shift();
                 if (savedData[1] < 0 && savedData[2] == currentQuestionListName) setQuestionListPage(currentQuestionListName, window.scrollY);
@@ -1000,6 +1001,8 @@
           savingElement.style.display = "";
           requestSetOrder(orderData, data => {
             questionData = data;
+            savedQuestionData = data;
+            localStorage.setItem("quiz-app-original-data", JSON.stringify(savedQuestionData));
             setQuestionListPage(currentQuestionListName);
             loadingElement.style.display = "none";
             savingElement.style.display = "none";
@@ -1074,23 +1077,38 @@
       });
 
       savingElement.style.display = "none";
-      loadingElement.style.display = "none";
-      if (currentQuestionIndex < 0) {
-        questionPage.style.display = "none";
-        editPage.style.display = "none";
-        setTopPage();
-      } else {
-        topPage.style.display = "none";
-        questionPage.style.display = "none";
-        setTopPage();
-        setQuestionListPage(questionData[currentQuestionIndex][5].replace(/ #[0-9]+$/, ""));
-        setEditPage(currentQuestionIndex);
+      function initialize() {
+        loadingElement.style.display = "none";
+        if (currentQuestionIndex < 0) {
+          questionPage.style.display = "none";
+          editPage.style.display = "none";
+          setTopPage();
+        } else {
+          topPage.style.display = "none";
+          questionPage.style.display = "none";
+          setTopPage();
+          setQuestionListPage(questionData[currentQuestionIndex][5].replace(/ #[0-9]+$/, ""));
+          setEditPage(currentQuestionIndex);
+        }
+        setTimeout(() => {
+          requestAnimationFrame(() => {
+            coverElement.style.display = "none";
+          });
+        }, 1);
       }
-      setTimeout(() => {
-        requestAnimationFrame(() => {
-          coverElement.style.display = "none";
+      if (questionData) {
+        initialize();
+      } else {
+        requestGetAllQuestionData(data => {
+          questionData = data;
+          savedQuestionData = data;
+          localStorage.setItem("quiz-app-original-data", JSON.stringify(savedQuestionData));
+          initialize();
+        }, () => {
+          savingElement.textContent = "データの読み込みに失敗しました。";
+          savingElement.style.display = "";
         });
-      }, 1);
+      }
 
 
 
@@ -1104,6 +1122,31 @@
         }
       }
 
+      async function requestGetAllQuestionData(successHandler = undefined, failureHandler = undefined) {
+        const body = {
+          function: "getAllQuestionData"
+        };
+        const header = {
+          'Content-type': "application/json",
+          'Authorization': "Bearer " + accessToken
+        };
+        const response = await fetch(API_URL, {method: "POST", body: JSON.stringify(body), headers: header});
+        if (!response.ok) {
+          console.error(`レスポンスステータス: ${response.status}`);
+          if (failureHandler) failureHandler();
+        } else {
+          const json = await response.json();
+          if (!json.done) {
+            console.error("Requested script didn't finish.");
+            if (failureHandler) failureHandler();
+          } else if (json.error) {
+            console.error(json.error);
+            if (failureHandler) failureHandler();
+          } else if (json.response) {
+            if (successHandler) successHandler(json.response.result);
+          }
+        }
+      }
       let setQuestionRequestFailTimes = 0;
       async function requestSetQuestion(data, questionIndex, questionListName, successHandler = undefined, failureHandler = undefined) {
         const body = {
