@@ -75,7 +75,7 @@
     });
 
     if (!accessToken || !correctState || !authSuccess) {
-      window.location = "about:blank";
+      window.location.replace("about:blank");
     } else {
       const state = self.crypto.randomUUID();
       localStorage.setItem("quiz-app-auth-state", state);
@@ -84,9 +84,9 @@
 
       const redirectURL = sessionStorage.getItem("quiz-app-redirect-URL");
       if (redirectURL) {
-        window.location = redirectURL;
+        window.location.replace(redirectURL)
       } else {
-        window.location = "about:blank";
+        window.location.replace("about:blank");
       }
     }
   </script>
