@@ -19,7 +19,7 @@
       let accessToken = sessionStorage.getItem("quiz-app-access-token");
       let accessTokenExpireDate = new Date(sessionStorage.getItem("quiz-app-access-token-expire"));
 
-      if (!accessToken || new Date().getTime() >= accessTokenExpireDate.getTime() - 10 * 60 * 1000) authorization(location.href);
+      if (!accessToken || new Date().getTime() >= accessTokenExpireDate.getTime() - 10 * 60 * 1000) authorize(location.href);
     </script>
 
 
@@ -1549,6 +1549,15 @@
 
 
 
+      nextQuestionButton.addEventListener('click', event => {
+        const currentDate = new Date();
+        if (currentDate.getTime() >= accessTokenExpireDate.getTime()) {
+          authorize(location.href);
+        } else if (record.length == 0 && currentDate.getTime() >= accessTokenExpireDate.getTime() - 5 * 60 * 1000) {
+          authorize(location.href);
+        }
+      });
+      
       async function requestGetData(successHandler = undefined, failureHandler = undefined) {
         const body = {
           function: "getData"
@@ -1602,7 +1611,7 @@
           } else if (json.response) {
             if (successHandler) successHandler(json.response.result);
             if (!is_active && new Date().getTime() >= accessTokenExpireDate.getTime() - 5 * 60 * 1000) {
-              authorization(location.href);
+              authorize(location.href);
             }
           }
         }

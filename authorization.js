@@ -1,4 +1,4 @@
-function authorization(redirectURL) {
+function authorize(redirectURL) {
   const state = self.crypto.randomUUID();
   localStorage.setItem("quiz-app-auth-state", state);
   sessionStorage.setItem("quiz-app-redirect-URL", redirectURL);

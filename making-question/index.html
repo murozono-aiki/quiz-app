@@ -17,7 +17,7 @@
       let accessToken = sessionStorage.getItem("quiz-app-access-token");
       let accessTokenExpireDate = new Date(sessionStorage.getItem("quiz-app-access-token-expire"));
 
-      if (!accessToken || new Date().getTime() >= accessTokenExpireDate.getTime() - 10 * 60 * 1000) authorization(location.href);
+      if (!accessToken || new Date().getTime() >= accessTokenExpireDate.getTime() - 10 * 60 * 1000) authorize(location.href);
 
       let initialQuestionData = [];
       let initialCurrentQuestionIndex = -1;
@@ -546,6 +546,7 @@
                 parentElement.appendChild(element);
                 element.addEventListener('click', event => {
                   if (!questionListSorting) {
+                    beforeOpeningEditPage(questionIndex);
                     coverElement.style.display = "";
                     questionPageScroll = window.scrollY;
                     focusQuestionPageButton = element;
@@ -1096,6 +1097,12 @@
 
 
 
+      function beforeOpeningEditPage(selectedQuestionIndex) {
+        if (new Date().getTime() >= accessTokenExpireDate.getTime() - 5 * 60 * 1000) {
+          authorize(location.href + "?questionIndex=" + selectedQuestionIndex);
+        }
+      }
+
       async function requestSetQuestion(data, questionIndex, questionListName, successHandler = undefined, failureHandler = undefined) {
         const body = {
           function: "setQuestion",
@@ -1119,9 +1126,6 @@
             if (failureHandler) failureHandler();
           } else if (json.response) {
             if (successHandler) successHandler(json.response.result);
-            if (new Date().getTime() >= accessTokenExpireDate.getTime() - 5 * 60 * 1000) {
-              authorization(location.href);
-            }
           }
         }
       }
@@ -1149,7 +1153,7 @@
           } else if (json.response) {
             if (successHandler) successHandler(json.response.result);
             if (new Date().getTime() >= accessTokenExpireDate.getTime() - 5 * 60 * 1000) {
-              authorization(location.href);
+              authorize(location.href);
             }
           }
         }
