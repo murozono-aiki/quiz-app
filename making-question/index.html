@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>作問 | クイズ</title>
     <link rel="icon" href="./../favicon.ico">
+    <link rel="manifest" href="./../manifest.json">
     <meta name="robots" content="noindex">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1103,6 +1104,7 @@
         }
       }
 
+      let setQuestionRequestFailTimes = 0;
       async function requestSetQuestion(data, questionIndex, questionListName, successHandler = undefined, failureHandler = undefined) {
         const body = {
           function: "setQuestion",
@@ -1115,16 +1117,20 @@
         const response = await fetch(API_URL, {method: "POST", body: JSON.stringify(body), headers: header});
         if (!response.ok) {
           console.error(`レスポンスステータス: ${response.status}`);
-          if (failureHandler) failureHandler(false);
+          setQuestionRequestFailTimes++;
+          if (failureHandler) failureHandler(setQuestionRequestFailTimes < 3);
         } else {
           const json = await response.json();
           if (!json.done) {
             console.error("Requested script didn't finish.");
-            if (failureHandler) failureHandler(false);
+            setQuestionRequestFailTimes++;
+            if (failureHandler) failureHandler(setQuestionRequestFailTimes < 3);
           } else if (json.error) {
             console.error(json.error);
-            if (failureHandler) failureHandler(false);
+            setQuestionRequestFailTimes++;
+            if (failureHandler) failureHandler(setQuestionRequestFailTimes < 3);
           } else if (json.response) {
+            setQuestionRequestFailTimes = 0;
             if (successHandler) successHandler(json.response.result);
           }
         }
